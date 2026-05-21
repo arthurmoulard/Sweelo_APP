@@ -2,7 +2,7 @@
 
 > Application de tracking sportif, défis sociaux et coaching IA pour athlètes amateurs  
 > **Stack :** Flask · SQLAlchemy · JWT · Vanilla JS PWA  
-> **Équipe :** Arthur · Valentin Pasquiet  
+> **Équipe :** Arthur Moulard · Valentin Pasquiet  
 > **Base de données :** SQLite (dev) → MySQL (prod)
 
 ---
