@@ -648,4 +648,330 @@ def test_compute_points_minimum():
 
 ---
 
+## 8. Modération de contenu
+
+> Stratégie de modération basée sur l'**OpenAI Moderation API** (gratuite) + système de signalement + routes admin.
+
+### Architecture de la modération
+
+La modération repose sur **3 niveaux complémentaires** :
+
+| Niveau | Mécanisme | Déclencheur |
+|--------|-----------|-------------|
+| **Préventif** | OpenAI Moderation API | Avant chaque INSERT commentaire/post |
+| **Réactif** | Signalement utilisateur | Bouton "Signaler" sur post/commentaire |
+| **Manuel** | Routes admin (`is_admin`) | Traitement de la file de signalements |
+
+### Diagramme de séquence — Soumission d'un commentaire avec modération
+
+```mermaid
+sequenceDiagram
+    actor U as Utilisateur (PWA)
+    participant API as Flask API
+    participant F as SweeloFacade
+    participant MOD as ModerationService
+    participant OAI as OpenAI Moderation API
+    participant DB as Base de données
+
+    U->>API: POST /api/v1/feed/{id}/comments<br/>Authorization: Bearer JWT<br/>{content: "Super run !"}
+    API->>API: Décode JWT → current_user
+    API->>F: create_comment(post_id, user_id, content)
+    F->>MOD: is_content_safe(content)
+    MOD->>OAI: POST /v1/moderations {input: "Super run !"}
+    OAI-->>MOD: {flagged: false, categories: {...}}
+
+    alt Contenu approuvé
+        MOD-->>F: {safe: true}
+        F->>DB: INSERT INTO comments
+        API-->>U: 201 Created {comment}
+    else Contenu refusé
+        MOD-->>F: {safe: false, reason: "harassment"}
+        F-->>API: ValueError("Contenu refusé")
+        API-->>U: 400 Bad Request {error: "Contenu refusé par la modération (harassment)"}
+    end
+```
+
+### Diagramme de séquence — Signalement & traitement admin
+
+```mermaid
+sequenceDiagram
+    actor U as Utilisateur (PWA)
+    actor A as Admin (PWA)
+    participant API as Flask API
+    participant F as SweeloFacade
+    participant DB as Base de données
+
+    U->>API: POST /api/v1/feed/{id}/report<br/>{target_type: "comment", reason: "spam"}
+    API->>F: report_content(reporter_id, target_type, target_id, reason)
+    F->>DB: INSERT INTO reports (status: "pending")
+    API-->>U: 200 OK {message: "Signalement enregistré"}
+
+    A->>API: GET /api/v1/admin/reports
+    API->>DB: SELECT * FROM reports WHERE status = "pending"
+    DB-->>API: [{report}]
+    API-->>A: 200 OK [{reports}]
+
+    A->>API: PUT /api/v1/admin/reports/{id}<br/>{action: "reviewed"}
+    API->>F: update_report_status(report_id, "reviewed")
+    F->>DB: UPDATE reports SET status = "reviewed"
+    A->>API: DELETE /api/v1/admin/comments/{id}
+    API->>DB: DELETE FROM comments WHERE id = ?
+    API-->>A: 204 No Content
+```
+
+### Table BDD — `reports`
+
+| Colonne | Type | Contrainte | Description |
+|---------|------|------------|-------------|
+| `id` | VARCHAR(36) | PK | UUID |
+| `reporter_id` | VARCHAR(36) | FK → users | Utilisateur qui signale |
+| `target_type` | ENUM | `comment` / `post` | Type de contenu signalé |
+| `target_id` | VARCHAR(36) | — | ID du contenu signalé |
+| `reason` | VARCHAR(255) | — | Raison du signalement |
+| `status` | ENUM | `pending` / `reviewed` / `dismissed` | État du traitement |
+| `created_at` | DATETIME | — | Date du signalement |
+
+### Modèle SQLAlchemy
+
+```python
+# app/models/report.py
+import uuid
+from app.extensions import db
+from datetime import datetime
+
+class Report(db.Model):
+    __tablename__ = "reports"
+
+    id          = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    reporter_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    target_type = db.Column(db.Enum("comment", "post"), nullable=False)
+    target_id   = db.Column(db.String(36), nullable=False)
+    reason      = db.Column(db.String(255))
+    status      = db.Column(db.Enum("pending", "reviewed", "dismissed"), default="pending")
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+    reporter = db.relationship("User", backref="reports")
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "reporter_id": self.reporter_id,
+            "target_type": self.target_type,
+            "target_id":   self.target_id,
+            "reason":      self.reason,
+            "status":      self.status,
+            "created_at":  self.created_at.isoformat(),
+        }
+```
+
+### ModerationService
+
+```python
+# app/services/moderation_service.py
+import openai
+from flask import current_app
+
+
+class ModerationService:
+    """
+    Wrapper autour de l'OpenAI Moderation API.
+    Endpoint gratuit : https://api.openai.com/v1/moderations
+    Détecte : hate, harassment, violence, sexual, self-harm, spam.
+    """
+
+    def __init__(self):
+        openai.api_key = current_app.config["OPENAI_API_KEY"]
+
+    def is_content_safe(self, text: str) -> dict:
+        """
+        Analyse un texte via l'OpenAI Moderation API.
+
+        Retourne :
+            {
+                "safe":       True / False,
+                "flagged":    True / False,
+                "categories": { "hate": False, "violence": True, ... },
+                "reason":     "violence"  # catégorie la plus probable si flaggé
+            }
+        """
+        try:
+            response = openai.moderations.create(input=text)
+            result   = response.results[0]
+
+            flagged    = result.flagged
+            categories = {k: v for k, v in result.categories.__dict__.items()}
+
+            reason = None
+            if flagged:
+                scores = result.category_scores.__dict__
+                reason = max(scores, key=scores.get)
+
+            return {
+                "safe":       not flagged,
+                "flagged":    flagged,
+                "categories": categories,
+                "reason":     reason,
+            }
+
+        except Exception as e:
+            # Fail open : en cas d'erreur API on laisse passer et on log
+            current_app.logger.error(f"[ModerationService] OpenAI error: {e}")
+            return {"safe": True, "flagged": False, "categories": {}, "reason": None}
+```
+
+### Intégration dans la Façade
+
+```python
+# app/services/facade.py  (extrait)
+from app.services.moderation_service import ModerationService
+
+
+class SweeloFacade:
+
+    def __init__(self):
+        # ... autres repos ...
+        self.moderation = ModerationService()
+
+    # ── Commentaires ──────────────────────────────────────────────────────
+
+    def create_comment(self, post_id: str, user_id: str, content: str) -> dict:
+        """Crée un commentaire après vérification de modération."""
+
+        check = self.moderation.is_content_safe(content)
+
+        if not check["safe"]:
+            raise ValueError(
+                f"Contenu refusé par la modération automatique "
+                f"(catégorie : {check['reason']})"
+            )
+
+        comment = Comment(post_id=post_id, user_id=user_id, content=content)
+        self.comment_repo.save(comment)
+        return comment.to_dict()
+
+    # ── Posts / Feed ──────────────────────────────────────────────────────
+
+    def create_feed_post(self, activity_id: str, user_id: str) -> dict:
+        """Publie une activité dans le feed (analyse les notes de l'activité)."""
+
+        activity = self.activity_repo.get(activity_id)
+
+        if activity.notes:
+            check = self.moderation.is_content_safe(activity.notes)
+            if not check["safe"]:
+                raise ValueError(
+                    f"Notes d'activité refusées par la modération "
+                    f"(catégorie : {check['reason']})"
+                )
+
+        post = FeedPost(activity_id=activity_id, user_id=user_id)
+        self.feed_repo.save(post)
+        return post.to_dict()
+
+    # ── Signalements ──────────────────────────────────────────────────────
+
+    def report_content(
+        self, reporter_id: str, target_type: str, target_id: str, reason: str
+    ) -> dict:
+        """Enregistre un signalement utilisateur."""
+
+        report = Report(
+            reporter_id=reporter_id,
+            target_type=target_type,
+            target_id=target_id,
+            reason=reason,
+        )
+        self.report_repo.save(report)
+        return report.to_dict()
+```
+
+### Routes admin
+
+```python
+# app/api/v1/admin.py
+from flask_restx import Namespace, Resource
+from flask_jwt_extended import jwt_required, get_jwt
+from functools import wraps
+
+ns = Namespace("admin", description="Routes de modération (admin uniquement)")
+
+
+def admin_required(fn):
+    """Décorateur : vérifie que l'utilisateur est admin."""
+    @wraps(fn)
+    @jwt_required()
+    def wrapper(*args, **kwargs):
+        if not get_jwt().get("is_admin"):
+            return {"error": "Admin access required"}, 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+@ns.route("/reports")
+class ReportList(Resource):
+
+    @admin_required
+    def get(self):
+        """Liste tous les signalements en attente."""
+        from app.extensions import facade
+        return {"data": facade.get_pending_reports()}, 200
+
+
+@ns.route("/reports/<string:report_id>")
+class ReportDetail(Resource):
+
+    @admin_required
+    def put(self, report_id):
+        """Traite un signalement : reviewed ou dismissed."""
+        from flask import request
+        from app.extensions import facade
+
+        action = request.get_json().get("action")
+        if action not in ("reviewed", "dismissed"):
+            return {"error": "action must be 'reviewed' or 'dismissed'"}, 400
+
+        return {"data": facade.update_report_status(report_id, action)}, 200
+
+
+@ns.route("/comments/<string:comment_id>")
+class AdminComment(Resource):
+
+    @admin_required
+    def delete(self, comment_id):
+        """Supprime un commentaire signalé."""
+        from app.extensions import facade
+        facade.delete_comment_admin(comment_id)
+        return {}, 204
+
+
+@ns.route("/users/<string:user_id>/ban")
+class AdminBan(Resource):
+
+    @admin_required
+    def post(self, user_id):
+        """Bannit un utilisateur."""
+        from app.extensions import facade
+        facade.ban_user(user_id)
+        return {"message": f"User {user_id} banned"}, 200
+```
+
+### Endpoints de modération
+
+| Méthode | Route | Auth | Description | Réponse |
+|---------|-------|------|-------------|---------|
+| `POST` | `/api/v1/feed/:id/report` | JWT | Signaler un post ou commentaire | `200 {message}` |
+| `GET` | `/api/v1/admin/reports` | JWT + Admin | Lister les signalements pending | `200 [{report}]` |
+| `PUT` | `/api/v1/admin/reports/:id` | JWT + Admin | Traiter un signalement | `200 {report}` |
+| `DELETE` | `/api/v1/admin/comments/:id` | JWT + Admin | Supprimer un commentaire | `204` |
+| `POST` | `/api/v1/admin/users/:id/ban` | JWT + Admin | Bannir un utilisateur | `200 {message}` |
+
+### Justification technique
+
+**OpenAI Moderation API** est choisie car :
+- **Gratuite** — aucun coût supplémentaire, la clé `OPENAI_API_KEY` est déjà utilisée pour le coaching IA
+- **Préventive** — le contenu inapproprié est bloqué avant même d'atteindre la BDD
+- **Complète** — détecte hate, harassment, violence, sexual content, self-harm, spam
+- **Simple à intégrer** — un seul appel HTTP, réponse JSON structurée
+- **Fail open** — en cas d'erreur API, le contenu est laissé passer pour ne pas bloquer l'expérience utilisateur
+
 *Documentation rédigée dans le cadre du cursus Holberton School — RNCP Niveau 5*
