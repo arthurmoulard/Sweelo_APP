@@ -1,8 +1,8 @@
-# SWEELO — Stage 3: Technical Documentation
+# Sweelo — Stage 3 : Documentation Technique
 
-> Application de tracking sportif, défis sociaux et coaching IA pour athlètes amateurs  
-> **Stack :** Flask · SQLAlchemy · JWT · Vanilla JS PWA  
-> **Équipe :** Arthur Moulard · Valentin Pasquiet  
+> Application de tracking sportif, défis sociaux et coaching IA pour athlètes amateurs
+> **Stack :** Flask · SQLAlchemy · JWT · Vanilla JS PWA
+> **Équipe :** Arthur Moulard · Valentin Pasquiet
 > **Base de données :** SQLite (dev) → MySQL (prod)
 
 ---
@@ -14,8 +14,9 @@
 3. [Composants, Classes & Base de données](#3-composants-classes--base-de-données)
 4. [Diagrammes de Séquence](#4-diagrammes-de-séquence)
 5. [Spécifications API](#5-spécifications-api)
-6. [SCM & QA](#6-scm--qa)
-7. [Justifications Techniques](#7-justifications-techniques)
+6. [Modération de contenu](#6-modération-de-contenu)
+7. [SCM & QA](#7-scm--qa)
+8. [Justifications Techniques](#8-justifications-techniques)
 
 ---
 
@@ -32,25 +33,31 @@
 | US-03 | En tant qu'athlète, je veux enregistrer une activité (type, distance, durée, date), afin de suivre mes entraînements. | 🔴 Must |
 | US-04 | En tant qu'athlète, je veux consulter l'historique de mes activités, afin de visualiser ma progression. | 🔴 Must |
 | US-05 | En tant qu'athlète, je veux voir un feed social des activités de mes amis, afin de rester motivé. | 🔴 Must |
-| US-06 | En tant qu'athlète, je veux créer ou rejoindre un défi (distance, durée, calories), afin de me mesurer à mes amis. | 🔴 Must |
-| US-07 | En tant qu'athlète, je veux voir le classement d'un défi en temps réel, afin de connaître ma position. | 🔴 Must |
+| US-06 | En tant qu'admin, je veux bannir ou supprimer un utilisateur, afin d'assainir la communauté. | 🔴 Must |
+| US-07 | En tant qu'admin, je veux signaler un post ou un commentaire côté user, afin d'alerter les modérateurs d'un contenu inapproprié. | 🔴 Must |
+| US-08 | En tant qu'admin, je veux soumettre chaque post ou commentaire a l'OpenAI Moderation API avant insertion, afin de bloquer automatiquement les contenus toxiques. | 🔴 Must |
 
 #### Should Have — Valeur ajoutée importante
 
 | # | User Story | Priorité |
 |---|------------|----------|
-| US-08 | En tant qu'athlète, je veux recevoir une recommandation de coaching IA après chaque activité, afin d'améliorer mes performances. | 🟠 Should |
-| US-09 | En tant qu'athlète, je veux gagner des points à chaque activité enregistrée, afin de débloquer des récompenses. | 🟠 Should |
-| US-10 | En tant qu'athlète, je veux ajouter des amis via leur identifiant, afin de suivre leurs activités. | 🟠 Should |
-| US-11 | En tant qu'athlète, je veux liker ou commenter une activité du feed, afin d'interagir avec mes amis. | 🟠 Should |
-
+| US-09 | En tant qu'athlète, je veux créer ou rejoindre un défi (distance, durée, calories), afin de me mesurer à mes amis. | 🟠 Should |
+| US-10 | En tant qu'athlète, je veux voir le classement d'un défi en temps réel, afin de connaître ma position. | 🟠 Should |
+| US-11 | En tant qu'athlète, je veux recevoir une recommandation de coaching IA après chaque activité, afin d'améliorer mes performances. | 🟠 Should |
+| US-12 | En tant qu'athlète, je veux que mes commentaires et posts soient modérés automatiquement, afin de garantir un environnement sain. | 🟠 Should |
+| US-13 | En tant qu'athlète, je veux gagner des points à chaque activité enregistrée, afin de débloquer des récompenses. | 🟠 Should |
+| US-14 | En tant qu'athlète, je veux ajouter des amis via leur identifiant, afin de suivre leurs activités. | 🟠 Should |
+| US-15 | En tant qu'athlète, je veux liker ou commenter une activité du feed, afin d'interagir avec mes amis. | 🟠 Should |
+| US-16 | En tant qu'athlète, je veux signaler un contenu inapproprié, afin de contribuer à la modération de la communauté. | 🟠 Should |
+| US-17 | En tant qu'admin, je veux consulter et traiter les signalements, afin de modérer la plateforme manuellement. | 🟠 Should |
+| US-18 | En tant qu'admin, je veux supprimer un post ou un commentaire signalé, afin de modérer le contenu inapproprié. | 🟠 Should |
 #### Could Have / Won't Have
 
 | # | User Story | Priorité |
 |---|------------|----------|
-| US-12 | En tant qu'athlète, je veux tracker mon activité en temps réel via GPS depuis mon smartphone. | 🟡 Could |
-| US-13 | En tant qu'athlète, je veux connecter ma montre via Bluetooth pour importer mes données automatiquement. | ⚪ Won't (MVP) |
-| US-14 | En tant qu'athlète, je veux partager mon activité sur Instagram ou Twitter. | ⚪ Won't (MVP) |
+| US-19 | En tant qu'athlète, je veux tracker mon activité en temps réel via GPS depuis mon smartphone. | 🟡 Could |
+| US-20 | En tant qu'athlète, je veux connecter ma montre via Bluetooth pour importer mes données automatiquement. | ⚪ Won't (MVP) |
+| US-21 | En tant qu'athlète, je veux partager mon activité sur Instagram ou Twitter. | ⚪ Won't (MVP) |
 
 ### Maquettes — Écrans principaux
 
@@ -58,10 +65,9 @@ Les 4 écrans ci-dessous sont à réaliser sur Figma et à joindre en annexe :
 
 | Écran | Contenu attendu | User Stories couvertes |
 |-------|-----------------|------------------------|
-| **Dashboard** | Résumé semaine, dernière activité, points cumulés, bouton "Enregistrer" | US-03, US-04, US-09 |
-| **Feed social** | Liste activités amis, bouton like/commentaire, carte d'activité | US-05, US-11 |
-| **Défis** | Mes défis actifs, classement, bouton rejoindre/créer | US-06, US-07 |
-| **Profil** | Stats personnelles, historique, badges/récompenses, liste amis | US-04, US-09, US-10 |
+| **Dashboard** | Dernière activité, points cumulés, bouton "Enregistrer" | US-03, US-04, US-10 |
+| **Feed social** | Liste activités amis, bouton like/commentaire/signaler, carte d'activité | US-05, US-12, US-13 |
+| **Profil** | Stats personnelles, historique, badges/récompenses, liste amis | US-04, US-10, US-11 |
 
 ---
 
@@ -80,8 +86,9 @@ graph TB
         RESTX[Flask-RESTX<br/>Routes & Namespaces]
         JWT[Flask-JWT-Extended<br/>Auth & Middleware]
         FACADE[SweeloFacade<br/>Logique métier]
-        REPO[Repositories<br/>UserRepo · ActivityRepo<br/>ChallengeRepo · FeedRepo]
+        REPO[Repositories<br/>UserRepo · ActivityRepo<br/>ChallengeRepo · FeedRepo · ReportRepo]
         AI_SVC[AICoachingService]
+        MOD_SVC[ModerationService]
     end
 
     subgraph Data["🗄️ Persistance"]
@@ -89,8 +96,9 @@ graph TB
         MYSQL[(MySQL<br/>Production)]
     end
 
-    subgraph External["🌐 Services externes"]
-        OPENAI[OpenAI API<br/>GPT-4o<br/>Coaching IA]
+    subgraph External["🌐 Services externes — OpenAI API"]
+        COACHING[GPT-4o<br/>Coaching IA<br/>/v1/chat/completions]
+        MODERATION[Moderation API<br/>Analyse de contenu<br/>/v1/moderations]
     end
 
     UI -->|HTTPS / JSON + Bearer JWT| RESTX
@@ -99,9 +107,11 @@ graph TB
     JWT --> FACADE
     FACADE --> REPO
     FACADE --> AI_SVC
+    FACADE --> MOD_SVC
     REPO -->|SQLAlchemy ORM| SQLITE
     REPO -->|SQLAlchemy ORM| MYSQL
-    AI_SVC -->|POST /chat/completions| OPENAI
+    AI_SVC -->|POST /v1/chat/completions| COACHING
+    MOD_SVC -->|POST /v1/moderations| MODERATION
 ```
 
 ### Stack technique
@@ -114,7 +124,8 @@ graph TB
 | ORM | SQLAlchemy | Abstraction BDD, Repository Pattern |
 | BDD dev | SQLite | Zéro configuration, portable |
 | BDD prod | MySQL | Robustesse, gestion de la concurrence |
-| Coaching IA | OpenAI API (GPT-4o) | Génération de recommandations post-activité |
+| Coaching IA | OpenAI API — GPT-4o | Génération de recommandations post-activité |
+| Modération | OpenAI Moderation API | Analyse automatique du contenu avant publication |
 | Hashage | bcrypt | Stockage sécurisé des mots de passe (OWASP) |
 
 ---
@@ -131,6 +142,8 @@ classDiagram
         +String password_hash
         +String username
         +Int total_points
+        +Bool is_admin
+        +Bool is_banned
         +DateTime created_at
         +create()
         +update()
@@ -208,16 +221,31 @@ classDiagram
         +to_dict()
     }
 
+    class Report {
+        +UUID id
+        +UUID reporter_id
+        +Enum target_type
+        +UUID target_id
+        +String reason
+        +Enum status
+        +DateTime created_at
+        +to_dict()
+    }
+
     class SweeloFacade {
         +UserRepository user_repo
         +ActivityRepository activity_repo
         +ChallengeRepository challenge_repo
         +FeedRepository feed_repo
+        +ReportRepository report_repo
         +AICoachingService ai_service
+        +ModerationService moderation
         +create_activity(data, user_id)
         +join_challenge(challenge_id, user_id)
         +get_feed(user_id, page)
         +get_coaching(activity_id)
+        +create_comment(post_id, user_id, content)
+        +report_content(reporter_id, type, target_id, reason)
     }
 
     User "1" --> "N" Activity : possède
@@ -227,11 +255,14 @@ classDiagram
     Activity "1" --> "1" FeedPost : publie
     Activity "1" --> "1" AICoaching : génère
     FeedPost "1" --> "N" Comment : contient
+    FeedPost "1" --> "N" Report : reçoit
+    Comment "1" --> "N" Report : reçoit
     Challenge "1" --> "N" ChallengeParticipant : regroupe
     SweeloFacade --> User
     SweeloFacade --> Activity
     SweeloFacade --> Challenge
     SweeloFacade --> FeedPost
+    SweeloFacade --> Report
     SweeloFacade --> AICoaching
 ```
 
@@ -245,6 +276,8 @@ erDiagram
         VARCHAR password_hash
         VARCHAR username UK
         INT total_points
+        BOOL is_admin
+        BOOL is_banned
         DATETIME created_at
     }
 
@@ -312,6 +345,16 @@ erDiagram
         DATETIME generated_at
     }
 
+    REPORTS {
+        UUID id PK
+        UUID reporter_id FK
+        ENUM target_type
+        UUID target_id
+        VARCHAR reason
+        ENUM status
+        DATETIME created_at
+    }
+
     USERS ||--o{ ACTIVITIES : "enregistre"
     USERS ||--o{ CHALLENGES : "crée"
     USERS ||--o{ CHALLENGE_PARTICIPANTS : "participe"
@@ -320,16 +363,19 @@ erDiagram
     ACTIVITIES ||--o| AI_COACHING : "génère"
     FEED_POSTS ||--o{ COMMENTS : "reçoit"
     FEED_POSTS ||--o{ POST_LIKES : "reçoit"
+    FEED_POSTS ||--o{ REPORTS : "est signalé via"
+    COMMENTS ||--o{ REPORTS : "est signalé via"
     USERS ||--o{ POST_LIKES : "effectue"
     USERS ||--o{ COMMENTS : "écrit"
     USERS ||--o{ FRIENDSHIPS : "initie"
+    USERS ||--o{ REPORTS : "soumet"
 ```
 
 ### Schéma détaillé des tables
 
 | Table | Colonnes principales | Relations |
 |-------|----------------------|-----------|
-| `users` | id PK, email UNIQUE, password_hash, username UNIQUE, total_points, created_at | → activities (1-N), → challenges (créateur), ↔ users (amis) |
+| `users` | id PK, email UNIQUE, password_hash, username UNIQUE, total_points, is_admin, is_banned, created_at | → activities (1-N), → challenges (créateur), ↔ users (amis) |
 | `activities` | id PK, user_id FK, type ENUM(run/bike/swim/walk), distance_km, duration_min, calories, date, notes | ← users, → feed_posts (1-1), → ai_coaching (1-1) |
 | `challenges` | id PK, title, creator_id FK, type ENUM(distance/duration/calories), target_value, start_date, end_date, is_active | ← users, ↔ users via challenge_participants |
 | `challenge_participants` | id PK, challenge_id FK, user_id FK, current_value, joined_at | Table de liaison + progression |
@@ -338,6 +384,7 @@ erDiagram
 | `post_likes` | post_id FK, user_id FK — PK composite | Table de liaison N-N |
 | `friendships` | user_id FK, friend_id FK — PK composite, status ENUM(pending/accepted) | Table auto-référentielle N-N |
 | `ai_coaching` | id PK, activity_id FK UNIQUE, recommendation TEXT, generated_at | ← activities |
+| `reports` | id PK, reporter_id FK, target_type ENUM(comment/post), target_id, reason, status ENUM(pending/reviewed/dismissed), created_at | ← users, ← comments ou feed_posts |
 
 ---
 
@@ -351,7 +398,7 @@ sequenceDiagram
     participant API as Flask API
     participant F as SweeloFacade
     participant DB as Base de données
-    participant AI as OpenAI API
+    participant AI as OpenAI GPT-4o
 
     U->>API: POST /api/v1/activities<br/>Authorization: Bearer JWT<br/>{type, distance_km, duration_min, date}
     API->>API: Vérifie JWT → récupère current_user
@@ -359,7 +406,7 @@ sequenceDiagram
     F->>DB: INSERT INTO activities
     F->>DB: compute_points() → UPDATE users.total_points
     F->>DB: INSERT INTO feed_posts (publication auto)
-    F->>AI: POST /chat/completions<br/>{prompt avec stats activité}
+    F->>AI: POST /v1/chat/completions<br/>{prompt avec stats activité}
     AI-->>F: 200 OK {recommendation: "..."}
     F->>DB: INSERT INTO ai_coaching
     API-->>U: 201 Created<br/>{activity, coaching_tip, points_earned}
@@ -419,12 +466,70 @@ sequenceDiagram
     U->>API: GET /api/v1/feed?page=1<br/>Authorization: Bearer JWT
     API->>API: Décode JWT → current_user.id
     API->>F: get_feed(user_id, page=1)
-    F->>DB: SELECT friend_ids FROM friendships<br/>WHERE user_id = ? AND status = 'accepted'
+    F->>DB: SELECT friend_ids FROM friendships WHERE user_id = ? AND status = accepted
     DB-->>F: [friend_ids]
     F->>DB: SELECT feed_posts + activities + users<br/>WHERE user_id IN (friend_ids)<br/>ORDER BY created_at DESC LIMIT 20
     DB-->>F: [{post, activity, user, likes_count}]
-    F->>DB: CHECK post_likes WHERE user_id = current_user (pour user_has_liked)
+    F->>DB: CHECK post_likes WHERE user_id = current_user
     API-->>U: 200 OK [{post, activity, user,<br/>likes_count, user_has_liked, comments_count}]
+```
+
+### Flux 5 — Soumission d'un commentaire avec modération automatique
+
+```mermaid
+sequenceDiagram
+    actor U as Utilisateur (PWA)
+    participant API as Flask API
+    participant F as SweeloFacade
+    participant MOD as ModerationService
+    participant OAI as OpenAI Moderation API
+    participant DB as Base de données
+
+    U->>API: POST /api/v1/feed/{id}/comments<br/>Authorization: Bearer JWT<br/>{content: "Super run !"}
+    API->>API: Décode JWT → current_user
+    API->>F: create_comment(post_id, user_id, content)
+    F->>MOD: is_content_safe(content)
+    MOD->>OAI: POST /v1/moderations {input: "Super run !"}
+    OAI-->>MOD: {flagged: false, categories: {...}}
+
+    alt Contenu approuvé
+        MOD-->>F: {safe: true}
+        F->>DB: INSERT INTO comments
+        API-->>U: 201 Created {comment}
+    else Contenu refusé
+        MOD-->>F: {safe: false, reason: "harassment"}
+        F-->>API: Erreur contenu refusé
+        API-->>U: 400 Bad Request<br/>{error: "Contenu refusé (harassment)"}
+    end
+```
+
+### Flux 6 — Signalement & traitement admin
+
+```mermaid
+sequenceDiagram
+    actor U as Utilisateur (PWA)
+    actor A as Admin (PWA)
+    participant API as Flask API
+    participant F as SweeloFacade
+    participant DB as Base de données
+
+    U->>API: POST /api/v1/feed/{id}/report<br/>{target_type: "comment", reason: "spam"}
+    API->>F: report_content(reporter_id, target_type, target_id, reason)
+    F->>DB: INSERT INTO reports (status: pending)
+    API-->>U: 200 OK {message: "Signalement enregistré"}
+
+    A->>API: GET /api/v1/admin/reports
+    API->>DB: SELECT * FROM reports WHERE status = pending
+    DB-->>API: [{report}]
+    API-->>A: 200 OK [{reports}]
+
+    A->>API: PUT /api/v1/admin/reports/{id}<br/>{action: "reviewed"}
+    API->>F: update_report_status(report_id, reviewed)
+    F->>DB: UPDATE reports SET status = reviewed
+
+    A->>API: DELETE /api/v1/admin/comments/{id}
+    API->>DB: DELETE FROM comments WHERE id = ?
+    API-->>A: 204 No Content
 ```
 
 ---
@@ -433,27 +538,28 @@ sequenceDiagram
 
 ### APIs externes utilisées
 
-| Service | Endpoint utilisé | Usage | Justification |
-|---------|-----------------|-------|---------------|
-| **OpenAI API** (GPT-4o) | `POST /v1/chat/completions` | Génération de recommandations coaching après chaque activité | Modèle puissant pour analyse contextuelle sportive. Appel côté serveur pour protéger la clé API. Réponse mise en cache en BDD. |
+| Service | Endpoint | Usage | Coût |
+|---------|----------|-------|------|
+| **OpenAI GPT-4o** | `POST /v1/chat/completions` | Génération des recommandations coaching post-activité | Payant (usage) |
+| **OpenAI Moderation API** | `POST /v1/moderations` | Analyse automatique du contenu avant publication | **Gratuit** |
 
-### Endpoints internes — Authentification
+### Endpoints — Authentification
 
 | Méthode | Route | Auth | Body | Réponse |
 |---------|-------|------|------|---------|
 | `POST` | `/api/v1/auth/register` | — | `{email, password, username}` | `201 {id, email, username}` |
 | `POST` | `/api/v1/auth/login` | — | `{email, password}` | `200 {access_token}` |
 
-### Endpoints internes — Activités
+### Endpoints — Activités
 
 | Méthode | Route | Auth | Body / Params | Réponse |
 |---------|-------|------|---------------|---------|
-| `GET` | `/api/v1/activities` | JWT | `?page=1&limit=20` | `200 [{activity}]` de l'user courant |
+| `GET` | `/api/v1/activities` | JWT | `?page=1&limit=20` | `200 [{activity}]` |
 | `POST` | `/api/v1/activities` | JWT | `{type, distance_km, duration_min, calories, date, notes}` | `201 {activity, coaching_tip, points_earned}` |
 | `GET` | `/api/v1/activities/:id` | JWT | — | `200 {activity + coaching}` / `404` |
 | `DELETE` | `/api/v1/activities/:id` | JWT + owner | — | `204` / `403` |
 
-### Endpoints internes — Défis
+### Endpoints — Défis
 
 | Méthode | Route | Auth | Body / Params | Réponse |
 |---------|-------|------|---------------|---------|
@@ -462,17 +568,18 @@ sequenceDiagram
 | `POST` | `/api/v1/challenges/:id/join` | JWT | — | `200 {rank, current_value, leaderboard}` |
 | `GET` | `/api/v1/challenges/:id/leaderboard` | JWT | — | `200 [{rank, username, value}]` |
 
-### Endpoints internes — Feed & Social
+### Endpoints — Feed & Social
 
 | Méthode | Route | Auth | Body / Params | Réponse |
 |---------|-------|------|---------------|---------|
 | `GET` | `/api/v1/feed` | JWT | `?page=1` | `200 [{post, activity, user, likes_count, user_has_liked, comments_count}]` |
 | `POST` | `/api/v1/feed/:id/like` | JWT | — | `200 {likes_count, liked: true}` |
-| `POST` | `/api/v1/feed/:id/comments` | JWT | `{content}` | `201 {comment}` |
-| `POST` | `/api/v1/users/:id/friend` | JWT | — | `200 {status: "pending"}` |
-| `PUT` | `/api/v1/users/:id/friend` | JWT | `{action: "accept"/"reject"}` | `200 {status: "accepted"}` |
+| `POST` | `/api/v1/feed/:id/comments` | JWT | `{content}` | `201 {comment}` / `400 si modération` |
+| `POST` | `/api/v1/feed/:id/report` | JWT | `{target_type, reason}` | `200 {message}` |
+| `POST` | `/api/v1/users/:id/friend` | JWT | — | `200 {status: pending}` |
+| `PUT` | `/api/v1/users/:id/friend` | JWT | `{action: accept/reject}` | `200 {status: accepted}` |
 
-### Endpoints internes — Profil & Statistiques
+### Endpoints — Profil & Statistiques
 
 | Méthode | Route | Auth | Réponse |
 |---------|-------|------|---------|
@@ -480,13 +587,22 @@ sequenceDiagram
 | `PUT` | `/api/v1/users/me` | JWT | `200 {user mis à jour}` |
 | `GET` | `/api/v1/users/me/stats` | JWT | `200 {total_km, total_min, total_calories, weekly_summary}` |
 
+### Endpoints — Administration & Modération
+
+| Méthode | Route | Auth | Body | Réponse |
+|---------|-------|------|------|---------|
+| `GET` | `/api/v1/admin/reports` | JWT + Admin | — | `200 [{report}]` |
+| `PUT` | `/api/v1/admin/reports/:id` | JWT + Admin | `{action: reviewed/dismissed}` | `200 {report}` |
+| `DELETE` | `/api/v1/admin/comments/:id` | JWT + Admin | — | `204` |
+| `POST` | `/api/v1/admin/users/:id/ban` | JWT + Admin | — | `200 {message}` |
+
 ### Format de réponse standard
 
 ```json
 // Succès
 {
   "status": "success",
-  "data": { ... }
+  "data": { "..." : "..." }
 }
 
 // Erreur
@@ -499,23 +615,52 @@ sequenceDiagram
 
 ---
 
-## 6. SCM & QA
+## 6. Modération de contenu
+
+### Stratégie — 3 niveaux complémentaires
+
+| Niveau | Mécanisme | Déclencheur |
+|--------|-----------|-------------|
+| **Préventif** | OpenAI Moderation API (gratuite) | Avant chaque INSERT commentaire / notes d'activité |
+| **Réactif** | Signalement utilisateur | Bouton "Signaler" sur post ou commentaire |
+| **Manuel** | Routes admin (`is_admin`) | Traitement de la file des signalements |
+
+### Ce que détecte l'OpenAI Moderation API
+
+| Catégorie | Description |
+|-----------|-------------|
+| `hate` | Discours haineux basé sur l'identité |
+| `harassment` | Harcèlement ou intimidation |
+| `violence` | Contenu violent ou menaçant |
+| `sexual` | Contenu sexuellement explicite |
+| `self-harm` | Contenu lié à l'automutilation |
+| `spam` | Contenu répétitif ou non pertinent |
+
+### Comportement en cas de contenu refusé
+
+- Le commentaire ou la note d'activité **n'est pas inséré en base de données**
+- L'API retourne un `400 Bad Request` avec la catégorie détectée
+- En cas d'erreur de l'API OpenAI : le contenu est laissé passer (**fail open**) pour ne pas bloquer l'expérience utilisateur
+
+### Table BDD — `reports`
+
+| Colonne | Type | Contrainte | Description |
+|---------|------|------------|-------------|
+| `id` | VARCHAR(36) | PK | UUID |
+| `reporter_id` | VARCHAR(36) | FK → users | Utilisateur qui signale |
+| `target_type` | ENUM | `comment` / `post` | Type de contenu signalé |
+| `target_id` | VARCHAR(36) | — | ID du contenu signalé |
+| `reason` | VARCHAR(255) | — | Raison libre du signalement |
+| `status` | ENUM | `pending` / `reviewed` / `dismissed` | État du traitement admin |
+| `created_at` | DATETIME | — | Date du signalement |
+
+---
+
+## 7. SCM & QA
 
 ### Stratégie SCM (Git)
 
-#### Branches
-
-```
-main
- └── develop
-      ├── feature/user-auth
-      ├── feature/activity-tracking
-      ├── feature/challenge-leaderboard
-      ├── feature/feed-social
-      ├── feature/ai-coaching
-      ├── fix/feed-pagination
-      └── chore/add-pytest-config
-```
+#### Structure des branches
 
 ```mermaid
 gitGraph
@@ -535,9 +680,25 @@ gitGraph
     commit id: "add AI coaching"
     checkout develop
     merge feature/activity-tracking id: "merge tracking"
+    branch feature/moderation
+    checkout feature/moderation
+    commit id: "add ModerationService"
+    commit id: "add reports table"
+    checkout develop
+    merge feature/moderation id: "merge moderation"
     checkout main
     merge develop id: "v1.0.0" tag: "v1.0.0"
 ```
+
+#### Types de branches
+
+| Branche | Usage |
+|---------|-------|
+| `main` | Code de production stable — merge via PR validée uniquement |
+| `develop` | Branche d'intégration continue, toujours déployable |
+| `feature/xxx` | Nouvelle fonctionnalité ex : `feature/challenge-leaderboard` |
+| `fix/xxx` | Correction de bug ex : `fix/feed-pagination` |
+| `chore/xxx` | Config, dépendances, CI ex : `chore/add-pytest-config` |
 
 #### Conventions de commits
 
@@ -562,13 +723,11 @@ gitGraph
 
 ### Stratégie QA (Tests)
 
-#### Types de tests
-
 | Type | Outil | Scope | Objectif |
 |------|-------|-------|----------|
-| **Unitaires** | `pytest` | Modèles, Façade, calcul de points, service IA (mock) | Couverture ≥ 80% |
-| **Intégration** | `pytest` + Flask test client | Tous les endpoints API, JWT sur routes protégées | Flux CRUD complets |
-| **Manuels** | Postman (collection partagée) | Flux end-to-end, cas d'erreur (401, 403, 404, 409) | Validation UX |
+| **Unitaires** | `pytest` | Modèles, Façade, calcul de points, ModerationService (mock) | Couverture ≥ 80% |
+| **Intégration** | `pytest` + Flask test client | Tous les endpoints API, JWT sur routes protégées, modération | Flux CRUD complets |
+| **Manuels** | Postman (collection partagée) | Flux end-to-end, cas d'erreur (400, 401, 403, 404, 409) | Validation UX |
 | **CI** | GitHub Actions | `pytest` + `flake8` lint sur chaque push | Blocage merge si échec |
 
 #### Structure des tests
@@ -580,398 +739,66 @@ tests/
 │   ├── test_activity_model.py
 │   ├── test_challenge_model.py
 │   ├── test_facade.py
-│   └── test_ai_service.py       # mock OpenAI
+│   ├── test_ai_service.py          # mock OpenAI GPT-4o
+│   └── test_moderation_service.py  # mock OpenAI Moderation API
 ├── integration/
 │   ├── test_auth_endpoints.py
 │   ├── test_activity_endpoints.py
 │   ├── test_challenge_endpoints.py
-│   └── test_feed_endpoints.py
-└── conftest.py                  # fixtures (app, db, JWT tokens)
-```
-
-#### Exemple de test unitaire
-
-```python
-# tests/unit/test_activity_model.py
-def test_compute_points_run():
-    activity = Activity(type="run", distance_km=10, duration_min=60)
-    assert activity.compute_points() == 100  # 10 pts/km
-
-def test_compute_points_minimum():
-    activity = Activity(type="walk", distance_km=0.5, duration_min=10)
-    assert activity.compute_points() >= 5  # points minimum
+│   ├── test_feed_endpoints.py
+│   └── test_admin_endpoints.py
+└── conftest.py                     # fixtures (app, db, JWT tokens)
 ```
 
 ---
 
-## 7. Justifications Techniques
+## 8. Justifications Techniques
 
 ### Flask + Flask-RESTX
 
-**Choix :** Framework micro Python léger pour API REST.  
-**Justification :** Flask-RESTX impose une structure par namespaces et génère automatiquement la documentation Swagger. Django serait surdimensionné pour un MVP de 2 développeurs sans beaucoup d'ORM natif — Flask laisse le contrôle total sur l'architecture.
+**Choix :** Framework micro Python léger pour API REST.
+**Justification :** Flask-RESTX impose une structure par namespaces et génère automatiquement la documentation Swagger. Django serait surdimensionné pour un MVP de 2 développeurs — Flask laisse le contrôle total sur l'architecture.
 
 ### SQLAlchemy (ORM) + Repository Pattern
 
-**Choix :** ORM Python avec pattern Repository.  
+**Choix :** ORM Python avec pattern Repository.
 **Justification :** Abstraction complète de la BDD — passage de SQLite (dev) à MySQL (prod) sans modifier le code applicatif. Le Repository Pattern découple la logique métier de la persistance, permettant de tester avec une `InMemoryRepository` sans base de données réelle.
 
 ### JWT (Flask-JWT-Extended)
 
-**Choix :** Authentification stateless par tokens JWT.  
-**Justification :** Aucune session serveur à gérer — scalabilité horizontale facilitée. Le token contient l'`id` et le rôle (`is_admin`) de l'utilisateur, éliminant un aller-retour BDD supplémentaire par requête protégée. Compatible PWA sans cookie de session traditionnel.
+**Choix :** Authentification stateless par tokens JWT.
+**Justification :** Aucune session serveur à gérer — scalabilité horizontale facilitée. Le token contient l'`id`, le rôle (`is_admin`) et le statut (`is_banned`) de l'utilisateur, éliminant un aller-retour BDD supplémentaire par requête protégée. Compatible PWA sans cookie de session traditionnel.
 
 ### bcrypt
 
-**Choix :** Algorithme de hashage adaptatif pour les mots de passe.  
-**Justification :** bcrypt inclut un salt automatique et est résistant aux attaques brute-force et rainbow tables grâce à son coût computationnel réglable. Recommandation officielle de l'OWASP pour le stockage des mots de passe. Supérieur à SHA-256 ou MD5 pour cet usage.
+**Choix :** Algorithme de hashage adaptatif pour les mots de passe.
+**Justification :** bcrypt inclut un salt automatique et est résistant aux attaques brute-force et rainbow tables. Recommandation officielle de l'OWASP pour le stockage des mots de passe. Supérieur à SHA-256 ou MD5 pour cet usage.
 
 ### Façade Pattern
 
-**Choix :** Couche d'orchestration entre routes et repositories.  
-**Justification :** Chaque endpoint Flask appelle uniquement la `SweeloFacade`, qui orchestre les repositories et services externes (IA). Cela rend le code testable unitairement sans démarrer le serveur web, et facilite l'évolution des règles métier sans toucher aux routes.
+**Choix :** Couche d'orchestration entre routes et repositories.
+**Justification :** Chaque endpoint Flask appelle uniquement la `SweeloFacade`, qui orchestre les repositories et services externes (coaching IA, modération). Cela rend le code testable unitairement sans démarrer le serveur web, et facilite l'évolution des règles métier sans toucher aux routes.
 
-### OpenAI API (GPT-4o) — Coaching IA
+### OpenAI GPT-4o — Coaching IA
 
-**Choix :** API externe LLM pour les recommandations sportives personnalisées.  
-**Justification :** GPT-4o offre une capacité de contextualisation supérieure pour l'analyse sportive. L'appel est effectué **côté serveur** (via Flask) pour protéger la clé API. La recommandation générée est mise en cache en BDD dans `ai_coaching`, évitant des appels redondants pour la même activité.
+**Choix :** API LLM pour les recommandations sportives personnalisées.
+**Justification :** GPT-4o offre une capacité de contextualisation supérieure pour l'analyse sportive. L'appel est effectué côté serveur pour protéger la clé API. La recommandation est mise en cache en BDD dans `ai_coaching`, évitant des appels redondants pour la même activité.
+
+### OpenAI Moderation API — Modération de contenu
+
+**Choix :** API gratuite d'OpenAI pour analyser le contenu avant publication.
+**Justification :** La clé `OPENAI_API_KEY` est déjà utilisée pour le coaching — aucune infrastructure supplémentaire. L'API est gratuite, couvre 6 catégories de contenu sensible, et s'intègre en un seul appel HTTP. La stratégie **fail open** (laisser passer en cas d'erreur API) garantit une expérience utilisateur fluide même en cas de panne du service externe.
 
 ### PWA Vanilla JS
 
-**Choix :** Progressive Web App en JavaScript natif sans framework.  
+**Choix :** Progressive Web App en JavaScript natif sans framework.
 **Justification :** Aucune dépendance frontend, chargement quasi-instantané. La Fetch API native suffit pour consommer l'API REST. Le **Service Worker** permet le mode offline — essentiel pour une app sportive utilisée en extérieur avec une connexion instable. React ou Vue ajouteraient une complexité de build non justifiée pour le MVP.
 
 ### SQLite (dev) → MySQL (prod)
 
-**Choix :** Double configuration base de données selon l'environnement.  
+**Choix :** Double configuration base de données selon l'environnement.
 **Justification :** SQLite ne nécessite aucune configuration pour le développement local (fichier unique `.db`). La migration vers MySQL en production est transparente grâce à SQLAlchemy — une seule variable d'environnement `DATABASE_URL` à changer. MySQL gère la concurrence multi-utilisateurs et les volumes de données attendus en production.
 
 ---
-
-## 8. Modération de contenu
-
-> Stratégie de modération basée sur l'**OpenAI Moderation API** (gratuite) + système de signalement + routes admin.
-
-### Architecture de la modération
-
-La modération repose sur **3 niveaux complémentaires** :
-
-| Niveau | Mécanisme | Déclencheur |
-|--------|-----------|-------------|
-| **Préventif** | OpenAI Moderation API | Avant chaque INSERT commentaire/post |
-| **Réactif** | Signalement utilisateur | Bouton "Signaler" sur post/commentaire |
-| **Manuel** | Routes admin (`is_admin`) | Traitement de la file de signalements |
-
-### Diagramme de séquence — Soumission d'un commentaire avec modération
-
-```mermaid
-sequenceDiagram
-    actor U as Utilisateur (PWA)
-    participant API as Flask API
-    participant F as SweeloFacade
-    participant MOD as ModerationService
-    participant OAI as OpenAI Moderation API
-    participant DB as Base de données
-
-    U->>API: POST /api/v1/feed/{id}/comments<br/>Authorization: Bearer JWT<br/>{content: "Super run !"}
-    API->>API: Décode JWT → current_user
-    API->>F: create_comment(post_id, user_id, content)
-    F->>MOD: is_content_safe(content)
-    MOD->>OAI: POST /v1/moderations {input: "Super run !"}
-    OAI-->>MOD: {flagged: false, categories: {...}}
-
-    alt Contenu approuvé
-        MOD-->>F: {safe: true}
-        F->>DB: INSERT INTO comments
-        API-->>U: 201 Created {comment}
-    else Contenu refusé
-        MOD-->>F: {safe: false, reason: "harassment"}
-        F-->>API: ValueError("Contenu refusé")
-        API-->>U: 400 Bad Request {error: "Contenu refusé par la modération (harassment)"}
-    end
-```
-
-### Diagramme de séquence — Signalement & traitement admin
-
-```mermaid
-sequenceDiagram
-    actor U as Utilisateur (PWA)
-    actor A as Admin (PWA)
-    participant API as Flask API
-    participant F as SweeloFacade
-    participant DB as Base de données
-
-    U->>API: POST /api/v1/feed/{id}/report<br/>{target_type: "comment", reason: "spam"}
-    API->>F: report_content(reporter_id, target_type, target_id, reason)
-    F->>DB: INSERT INTO reports (status: "pending")
-    API-->>U: 200 OK {message: "Signalement enregistré"}
-
-    A->>API: GET /api/v1/admin/reports
-    API->>DB: SELECT * FROM reports WHERE status = "pending"
-    DB-->>API: [{report}]
-    API-->>A: 200 OK [{reports}]
-
-    A->>API: PUT /api/v1/admin/reports/{id}<br/>{action: "reviewed"}
-    API->>F: update_report_status(report_id, "reviewed")
-    F->>DB: UPDATE reports SET status = "reviewed"
-    A->>API: DELETE /api/v1/admin/comments/{id}
-    API->>DB: DELETE FROM comments WHERE id = ?
-    API-->>A: 204 No Content
-```
-
-### Table BDD — `reports`
-
-| Colonne | Type | Contrainte | Description |
-|---------|------|------------|-------------|
-| `id` | VARCHAR(36) | PK | UUID |
-| `reporter_id` | VARCHAR(36) | FK → users | Utilisateur qui signale |
-| `target_type` | ENUM | `comment` / `post` | Type de contenu signalé |
-| `target_id` | VARCHAR(36) | — | ID du contenu signalé |
-| `reason` | VARCHAR(255) | — | Raison du signalement |
-| `status` | ENUM | `pending` / `reviewed` / `dismissed` | État du traitement |
-| `created_at` | DATETIME | — | Date du signalement |
-
-### Modèle SQLAlchemy
-
-```python
-# app/models/report.py
-import uuid
-from app.extensions import db
-from datetime import datetime
-
-class Report(db.Model):
-    __tablename__ = "reports"
-
-    id          = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    reporter_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
-    target_type = db.Column(db.Enum("comment", "post"), nullable=False)
-    target_id   = db.Column(db.String(36), nullable=False)
-    reason      = db.Column(db.String(255))
-    status      = db.Column(db.Enum("pending", "reviewed", "dismissed"), default="pending")
-    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
-
-    reporter = db.relationship("User", backref="reports")
-
-    def to_dict(self):
-        return {
-            "id":          self.id,
-            "reporter_id": self.reporter_id,
-            "target_type": self.target_type,
-            "target_id":   self.target_id,
-            "reason":      self.reason,
-            "status":      self.status,
-            "created_at":  self.created_at.isoformat(),
-        }
-```
-
-### ModerationService
-
-```python
-# app/services/moderation_service.py
-import openai
-from flask import current_app
-
-
-class ModerationService:
-    """
-    Wrapper autour de l'OpenAI Moderation API.
-    Endpoint gratuit : https://api.openai.com/v1/moderations
-    Détecte : hate, harassment, violence, sexual, self-harm, spam.
-    """
-
-    def __init__(self):
-        openai.api_key = current_app.config["OPENAI_API_KEY"]
-
-    def is_content_safe(self, text: str) -> dict:
-        """
-        Analyse un texte via l'OpenAI Moderation API.
-
-        Retourne :
-            {
-                "safe":       True / False,
-                "flagged":    True / False,
-                "categories": { "hate": False, "violence": True, ... },
-                "reason":     "violence"  # catégorie la plus probable si flaggé
-            }
-        """
-        try:
-            response = openai.moderations.create(input=text)
-            result   = response.results[0]
-
-            flagged    = result.flagged
-            categories = {k: v for k, v in result.categories.__dict__.items()}
-
-            reason = None
-            if flagged:
-                scores = result.category_scores.__dict__
-                reason = max(scores, key=scores.get)
-
-            return {
-                "safe":       not flagged,
-                "flagged":    flagged,
-                "categories": categories,
-                "reason":     reason,
-            }
-
-        except Exception as e:
-            # Fail open : en cas d'erreur API on laisse passer et on log
-            current_app.logger.error(f"[ModerationService] OpenAI error: {e}")
-            return {"safe": True, "flagged": False, "categories": {}, "reason": None}
-```
-
-### Intégration dans la Façade
-
-```python
-# app/services/facade.py  (extrait)
-from app.services.moderation_service import ModerationService
-
-
-class SweeloFacade:
-
-    def __init__(self):
-        # ... autres repos ...
-        self.moderation = ModerationService()
-
-    # ── Commentaires ──────────────────────────────────────────────────────
-
-    def create_comment(self, post_id: str, user_id: str, content: str) -> dict:
-        """Crée un commentaire après vérification de modération."""
-
-        check = self.moderation.is_content_safe(content)
-
-        if not check["safe"]:
-            raise ValueError(
-                f"Contenu refusé par la modération automatique "
-                f"(catégorie : {check['reason']})"
-            )
-
-        comment = Comment(post_id=post_id, user_id=user_id, content=content)
-        self.comment_repo.save(comment)
-        return comment.to_dict()
-
-    # ── Posts / Feed ──────────────────────────────────────────────────────
-
-    def create_feed_post(self, activity_id: str, user_id: str) -> dict:
-        """Publie une activité dans le feed (analyse les notes de l'activité)."""
-
-        activity = self.activity_repo.get(activity_id)
-
-        if activity.notes:
-            check = self.moderation.is_content_safe(activity.notes)
-            if not check["safe"]:
-                raise ValueError(
-                    f"Notes d'activité refusées par la modération "
-                    f"(catégorie : {check['reason']})"
-                )
-
-        post = FeedPost(activity_id=activity_id, user_id=user_id)
-        self.feed_repo.save(post)
-        return post.to_dict()
-
-    # ── Signalements ──────────────────────────────────────────────────────
-
-    def report_content(
-        self, reporter_id: str, target_type: str, target_id: str, reason: str
-    ) -> dict:
-        """Enregistre un signalement utilisateur."""
-
-        report = Report(
-            reporter_id=reporter_id,
-            target_type=target_type,
-            target_id=target_id,
-            reason=reason,
-        )
-        self.report_repo.save(report)
-        return report.to_dict()
-```
-
-### Routes admin
-
-```python
-# app/api/v1/admin.py
-from flask_restx import Namespace, Resource
-from flask_jwt_extended import jwt_required, get_jwt
-from functools import wraps
-
-ns = Namespace("admin", description="Routes de modération (admin uniquement)")
-
-
-def admin_required(fn):
-    """Décorateur : vérifie que l'utilisateur est admin."""
-    @wraps(fn)
-    @jwt_required()
-    def wrapper(*args, **kwargs):
-        if not get_jwt().get("is_admin"):
-            return {"error": "Admin access required"}, 403
-        return fn(*args, **kwargs)
-    return wrapper
-
-
-@ns.route("/reports")
-class ReportList(Resource):
-
-    @admin_required
-    def get(self):
-        """Liste tous les signalements en attente."""
-        from app.extensions import facade
-        return {"data": facade.get_pending_reports()}, 200
-
-
-@ns.route("/reports/<string:report_id>")
-class ReportDetail(Resource):
-
-    @admin_required
-    def put(self, report_id):
-        """Traite un signalement : reviewed ou dismissed."""
-        from flask import request
-        from app.extensions import facade
-
-        action = request.get_json().get("action")
-        if action not in ("reviewed", "dismissed"):
-            return {"error": "action must be 'reviewed' or 'dismissed'"}, 400
-
-        return {"data": facade.update_report_status(report_id, action)}, 200
-
-
-@ns.route("/comments/<string:comment_id>")
-class AdminComment(Resource):
-
-    @admin_required
-    def delete(self, comment_id):
-        """Supprime un commentaire signalé."""
-        from app.extensions import facade
-        facade.delete_comment_admin(comment_id)
-        return {}, 204
-
-
-@ns.route("/users/<string:user_id>/ban")
-class AdminBan(Resource):
-
-    @admin_required
-    def post(self, user_id):
-        """Bannit un utilisateur."""
-        from app.extensions import facade
-        facade.ban_user(user_id)
-        return {"message": f"User {user_id} banned"}, 200
-```
-
-### Endpoints de modération
-
-| Méthode | Route | Auth | Description | Réponse |
-|---------|-------|------|-------------|---------|
-| `POST` | `/api/v1/feed/:id/report` | JWT | Signaler un post ou commentaire | `200 {message}` |
-| `GET` | `/api/v1/admin/reports` | JWT + Admin | Lister les signalements pending | `200 [{report}]` |
-| `PUT` | `/api/v1/admin/reports/:id` | JWT + Admin | Traiter un signalement | `200 {report}` |
-| `DELETE` | `/api/v1/admin/comments/:id` | JWT + Admin | Supprimer un commentaire | `204` |
-| `POST` | `/api/v1/admin/users/:id/ban` | JWT + Admin | Bannir un utilisateur | `200 {message}` |
-
-### Justification technique
-
-**OpenAI Moderation API** est choisie car :
-- **Gratuite** — aucun coût supplémentaire, la clé `OPENAI_API_KEY` est déjà utilisée pour le coaching IA
-- **Préventive** — le contenu inapproprié est bloqué avant même d'atteindre la BDD
-- **Complète** — détecte hate, harassment, violence, sexual content, self-harm, spam
-- **Simple à intégrer** — un seul appel HTTP, réponse JSON structurée
-- **Fail open** — en cas d'erreur API, le contenu est laissé passer pour ne pas bloquer l'expérience utilisateur
 
 *Documentation rédigée dans le cadre du cursus Holberton School — RNCP Niveau 5*
