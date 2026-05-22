@@ -68,6 +68,51 @@ Les maquettes interactives ci-dessous couvrent l'ensemble des écrans du MVP, or
 | **Admin — Utilisateurs** | Stats globales, liste utilisateurs, bannir/avertir | US-06 |
 | **Admin — Modération** | File signalements, score OpenAI, actions bloquer/valider | US-08, US-11, US-12 |
 
+## Inscription
+
+
+<img width="365" height="583" alt="Capture d&#39;écran 2026-05-22 160636" src="https://github.com/user-attachments/assets/d6d9cb52-2ec2-4432-8c8d-891bdd9d83e5" />
+
+
+
+## Connexion
+
+
+<img width="374" height="537" alt="Capture d&#39;écran 2026-05-22 160645" src="https://github.com/user-attachments/assets/e5ee52b0-f30f-48e6-9a87-ce1a6d153528" />
+
+
+
+## Enregistrer une activité
+
+
+<img width="372" height="565" alt="Capture d&#39;écran 2026-05-22 160652" src="https://github.com/user-attachments/assets/9f2f45d7-2e95-4284-a246-85c0e32cd7c0" />
+
+
+
+## Historique
+
+
+
+<img width="375" height="521" alt="Capture d&#39;écran 2026-05-22 160715" src="https://github.com/user-attachments/assets/04377188-c3e7-4f14-9ce0-0b3ad11d5223" />
+
+
+## Feed
+
+
+
+<img width="371" height="446" alt="Capture d&#39;écran 2026-05-22 160725" src="https://github.com/user-attachments/assets/070b2aef-56bf-4bbf-82bd-e3a80031c227" />
+
+
+
+
+## Modération
+
+
+
+<img width="370" height="504" alt="Capture d&#39;écran 2026-05-22 160734" src="https://github.com/user-attachments/assets/1eb4d971-8cc3-47de-9e68-760914a909af" />
+
+
+<img width="377" height="611" alt="Capture d&#39;écran 2026-05-22 160742" src="https://github.com/user-attachments/assets/8c348bdd-caf8-443d-8abc-05bd1153285d" />
 
 
 
