@@ -195,7 +195,7 @@ classDiagram
         +add_friend(user_id)
         +to_dict()
     }
-
+ 
     class Activity {
         +UUID id
         +UUID user_id
@@ -208,7 +208,7 @@ classDiagram
         +delete()
         +to_dict()
     }
-
+ 
     class FeedPost {
         +UUID id
         +UUID activity_id
@@ -219,7 +219,7 @@ classDiagram
         +like(user_id)
         +get_comments()
     }
-
+ 
     class Comment {
         +UUID id
         +UUID post_id
@@ -229,7 +229,7 @@ classDiagram
         +create()
         +delete()
     }
-
+ 
     class Report {
         +UUID id
         +UUID reporter_id
@@ -240,7 +240,13 @@ classDiagram
         +DateTime created_at
         +to_dict()
     }
-
+ 
+    class Friendship {
+        +UUID user_id
+        +UUID friend_id
+        +Enum status
+    }
+ 
     class SweeloFacade {
         +UserRepository user_repo
         +ActivityRepository activity_repo
@@ -252,9 +258,10 @@ classDiagram
         +create_comment(post_id, user_id, content)
         +report_content(reporter_id, type, target_id, reason)
     }
-
+ 
     User "1" --> "N" Activity : possède
-    User "N" --> "N" User : amis via Friendship
+    User "1" --> "N" Friendship : initie
+    User "1" --> "N" Friendship : reçoit
     Activity "1" --> "1" FeedPost : publie
     FeedPost "1" --> "N" Comment : contient
     FeedPost "1" --> "N" Report : reçoit
