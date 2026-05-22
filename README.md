@@ -1,9 +1,13 @@
 # Sweelo — Stage 3 : Documentation Technique
 
 > Application de tracking sportif et réseau social sportif pour athlètes amateurs
+
 > **Stack :** Flask · SQLAlchemy · JWT · Vanilla JS PWA
+
 > **Équipe :** Arthur Moulard · Valentin Pasquiet
+
 > **Base de données :** SQLite (dev) → MySQL (prod)
+
 
 ---
 
