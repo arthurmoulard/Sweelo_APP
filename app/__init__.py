@@ -30,7 +30,6 @@ def create_app(config_name: str = "default") -> Flask:
     # ── 4. Enregistrement des namespaces API ──────────────────────────────────
     from app.api.v1.auth       import ns as auth_ns
     from app.api.v1.activities import ns as activities_ns
-    from app.api.v1.challenges import ns as challenges_ns
     from app.api.v1.feed       import ns as feed_ns
     from app.api.v1.users      import ns as users_ns
     from app.api.v1.admin      import ns as admin_ns
@@ -47,7 +46,6 @@ def create_app(config_name: str = "default") -> Flask:
 
     api.add_namespace(auth_ns,        path="/auth")
     api.add_namespace(activities_ns,  path="/activities")
-    api.add_namespace(challenges_ns,  path="/challenges")
     api.add_namespace(feed_ns,        path="/feed")
     api.add_namespace(users_ns,       path="/users")
     api.add_namespace(admin_ns,       path="/admin")
