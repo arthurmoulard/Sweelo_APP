@@ -48,7 +48,7 @@ class Sweelofacade:
         activity = self.activity_repository.get_by_id(activity_id)
         if not activity:
             raise LookupError("Activity not found")
-        if activity.user_id != user_id
+        if activity.user_id != user_id:
             raise PermissionError("Forbidden")
         return activity
     
