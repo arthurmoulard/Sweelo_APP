@@ -5,12 +5,11 @@ from app.extensions import facade
 ns = Namespace("feed", description="Feed social et interactions")
 
 comment_model = ns.model("Comment", {
-    "content": fields.String(required=True),
+    "content": fields.String(required=True, min_length=1, max_length=500),
 })
 
 report_model = ns.model("Report", {
-    "target_type": fields.String(required=True, enum=["post", "comment"]),
-    "reason":      fields.String(),
+    "reason": fields.String(max_length=255),
 })
 
 
@@ -18,6 +17,8 @@ report_model = ns.model("Report", {
 class Feed(Resource):
 
     @jwt_required()
+    @ns.response(200, "List of posts")
+    @ns.response(401, "Missing or invalid token")
     def get(self):
         from flask import request
         user_id = get_jwt_identity()
@@ -30,6 +31,9 @@ class Feed(Resource):
 class Like(Resource):
 
     @jwt_required()
+    @ns.response(200, "Like toggled (liked or unliked)")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(404, "Post not found")
     def post(self, post_id):
         user_id = get_jwt_identity()
         try:
@@ -43,9 +47,11 @@ class Like(Resource):
 class Comments(Resource):
 
     @jwt_required()
-    @ns.expect(comment_model)
+    @ns.expect(comment_model, validate=True)
     @ns.response(201, "Comment created")
     @ns.response(400, "Content rejected by moderation")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(404, "Post not found")
     def post(self, post_id):
         user_id = get_jwt_identity()
         try:
@@ -61,13 +67,40 @@ class Comments(Resource):
 class ReportPost(Resource):
 
     @jwt_required()
-    @ns.expect(report_model)
+    @ns.expect(report_model, validate=True)
+    @ns.response(200, "Report submitted")
+    @ns.response(400, "Validation error")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(404, "Post not found")
     def post(self, post_id):
         user_id = get_jwt_identity()
         facade.report_content(
             reporter_id=user_id,
-            target_type=ns.payload.get("target_type", "post"),
+            target_type="post",
             target_id=post_id,
-            reason=ns.payload.get("reason", ""),
+            reason=(ns.payload or {}).get("reason", ""),
+        )
+        return {"message": "Report submitted"}, 200
+
+
+@ns.route("/comments/<string:comment_id>/report")
+class ReportComment(Resource):
+
+    @jwt_required()
+    @ns.expect(report_model, validate=True)
+    @ns.response(200, "Report submitted")
+    @ns.response(400, "Validation error")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(404, "Comment not found")
+    def post(self, comment_id):
+        from app.models.comment import Comment
+        user_id = get_jwt_identity()
+        if not Comment.query.get(comment_id):
+            ns.abort(404, "Comment not found")
+        facade.report_content(
+            reporter_id=user_id,
+            target_type="comment",
+            target_id=comment_id,
+            reason=(ns.payload or {}).get("reason", ""),
         )
         return {"message": "Report submitted"}, 200

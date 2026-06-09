@@ -5,9 +5,10 @@ from app.extensions import facade
 ns = Namespace("auth", description="Inscription et connexion")
 
 register_model = ns.model("Register", {
-    "email":    fields.String(required=True),
-    "username": fields.String(required=True),
-    "password": fields.String(required=True),
+    "email":    fields.String(required=True, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$"),
+    "username": fields.String(required=True, min_length=3, max_length=30,
+                              pattern=r"^[a-zA-Z0-9_-]+$"),
+    "password": fields.String(required=True, min_length=8),
 })
 
 login_model = ns.model("Login", {
@@ -19,15 +20,16 @@ login_model = ns.model("Login", {
 @ns.route("/register")
 class Register(Resource):
 
-    @ns.expect(register_model)
+    @ns.expect(register_model, validate=True)
     @ns.response(201, "User created")
+    @ns.response(400, "Validation error")
     @ns.response(409, "Email or username already used")
     def post(self):
         data = ns.payload
         try:
             user = facade.register(
-                email=data["email"],
-                username=data["username"],
+                email=data["email"].strip().lower(),
+                username=data["username"].strip(),
                 password=data["password"],
             )
             return user.to_dict(), 201
@@ -38,9 +40,10 @@ class Register(Resource):
 @ns.route("/login")
 class Login(Resource):
 
-    @ns.expect(login_model)
+    @ns.expect(login_model, validate=True)
     @ns.response(200, "Login successful")
-    @ns.response(401, "Invalid credentials")
+    @ns.response(400, "Validation error")
+    @ns.response(401, "Invalid credentials or account banned")
     def post(self):
         data = ns.payload
         try:

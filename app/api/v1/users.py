@@ -9,6 +9,9 @@ ns = Namespace("users", description="Profil et amis")
 class Me(Resource):
 
     @jwt_required()
+    @ns.response(200, "User profile")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(404, "User not found")
     def get(self):
         user_id = get_jwt_identity()
         user = facade.user_repository.get_by_id(user_id)
@@ -24,6 +27,8 @@ class Me(Resource):
 class Stats(Resource):
 
     @jwt_required()
+    @ns.response(200, "User stats")
+    @ns.response(401, "Missing or invalid token")
     def get(self):
         user_id = get_jwt_identity()
         return facade.get_user_stats(user_id), 200
@@ -33,6 +38,10 @@ class Stats(Resource):
 class Friend(Resource):
 
     @jwt_required()
+    @ns.response(200, "Friend added")
+    @ns.response(400, "Cannot add yourself or already friends")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(404, "User not found")
     def post(self, friend_id):
         user_id = get_jwt_identity()
         try:

@@ -8,10 +8,11 @@ ns = Namespace("activities", description="Gestion des activités sportives")
 
 activity_model = ns.model("Activity", {
     "type":         fields.String(required=True, enum=list(Activity.ACTIVITY_TYPES)),
-    "distance_km":  fields.Float(description="Obligatoire pour run/bike/swim/walk/trail/triathlon/hyrox"),
-    "duration_min": fields.Integer(required=True),
-    "date":         fields.String(required=True, description="YYYY-MM-DD"),
-    "notes":        fields.String(),
+    "distance_km":  fields.Float(min=0.001, description="Obligatoire pour run/bike/swim/walk/trail/triathlon/hyrox"),
+    "duration_min": fields.Integer(required=True, min=1),
+    "date":         fields.String(required=True, pattern=r"^\d{4}-\d{2}-\d{2}$",
+                                  description="YYYY-MM-DD, pas dans le futur"),
+    "notes":        fields.String(max_length=500),
     "extra_data":   fields.Raw(description=(
         "Données spécifiques au sport. "
         "muscu: {weight_kg, sets, reps} | "
@@ -26,6 +27,8 @@ activity_model = ns.model("Activity", {
 class ActivityList(Resource):
 
     @jwt_required()
+    @ns.response(200, "List of activities")
+    @ns.response(401, "Missing or invalid token")
     def get(self):
         user_id = get_jwt_identity()
         page = int(request.args.get("page", 1))
@@ -33,19 +36,18 @@ class ActivityList(Resource):
         return [a.to_dict() for a in activities], 200
 
     @jwt_required()
-    @ns.expect(activity_model)
+    @ns.expect(activity_model, validate=True)
     @ns.response(201, "Activity created")
-    @ns.response(400, "Invalid data")
+    @ns.response(400, "Validation error or content rejected")
+    @ns.response(401, "Missing or invalid token")
     def post(self):
         user_id = get_jwt_identity()
         data = dict(ns.payload)
         activity_type = data.get("type")
 
-        # Distance obligatoire pour les sports avec déplacement
         if activity_type not in Activity.NO_DISTANCE_TYPES and not data.get("distance_km"):
             ns.abort(400, f"distance_km is required for {activity_type}")
 
-        # Distance ignorée pour les sports sans déplacement
         if activity_type in Activity.NO_DISTANCE_TYPES:
             data["distance_km"] = None
 
@@ -60,6 +62,10 @@ class ActivityList(Resource):
 class ActivityDetail(Resource):
 
     @jwt_required()
+    @ns.response(200, "Activity details")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(403, "Not your activity")
+    @ns.response(404, "Activity not found")
     def get(self, activity_id):
         user_id = get_jwt_identity()
         try:
@@ -72,6 +78,9 @@ class ActivityDetail(Resource):
 
     @jwt_required()
     @ns.response(204, "Activity deleted")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(403, "Not your activity")
+    @ns.response(404, "Activity not found")
     def delete(self, activity_id):
         user_id = get_jwt_identity()
         try:

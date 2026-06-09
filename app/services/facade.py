@@ -35,6 +35,18 @@ class SweeloFacade:
     # -------------- Activities methods ------------------------------
 
     def create_activity(self, user_id, data):
+        from datetime import date
+        try:
+            if date.fromisoformat(data.get("date", "")) > date.today():
+                raise ValueError("Activity date cannot be in the future")
+        except (TypeError, ValueError) as exc:
+            if "future" in str(exc):
+                raise
+        notes = data.get("notes", "") or ""
+        if notes:
+            safe, reason = self.moderation.check(notes)
+            if not safe:
+                raise ValueError(f"Content rejected ({reason})")
         activity = self.activity_repository.create(user_id=user_id, **data)
         self.feed_repository.create_post(user_id=user_id, activity_id=activity.id)
         return activity
@@ -109,6 +121,19 @@ class SweeloFacade:
             raise LookupError("User not found")
         user.is_banned = True
         user.save()
+
+    def unban_user(self, user_id):
+        user = self.user_repository.get_by_id(user_id)
+        if not user:
+            raise LookupError("User not found")
+        user.is_banned = False
+        user.save()
+
+    def delete_post(self, post_id):
+        post = self.feed_repository.get_post(post_id)
+        if not post:
+            raise LookupError("Post not found")
+        post.delete()
 
     def update_report(self, report_id, action):
         report = self.report_repository.get_by_id(report_id)
