@@ -27,13 +27,12 @@ activity_model = ns.model("Activity", {
 class ActivityList(Resource):
 
     @jwt_required()
-    @ns.response(200, "List of activities")
+    @ns.response(200, "Paginated list of activities")
     @ns.response(401, "Missing or invalid token")
     def get(self):
         user_id = get_jwt_identity()
         page = int(request.args.get("page", 1))
-        activities = facade.get_user_activities(user_id, page=page)
-        return [a.to_dict() for a in activities], 200
+        return facade.get_user_activities(user_id, page=page), 200
 
     @jwt_required()
     @ns.expect(activity_model, validate=True)
@@ -58,6 +57,15 @@ class ActivityList(Resource):
             ns.abort(400, str(e))
 
 
+update_model = ns.model("ActivityUpdate", {
+    "distance_km":  fields.Float(min=0.001),
+    "duration_min": fields.Integer(min=1),
+    "date":         fields.String(pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    "notes":        fields.String(max_length=500),
+    "extra_data":   fields.Raw(),
+})
+
+
 @ns.route("/<string:activity_id>")
 class ActivityDetail(Resource):
 
@@ -75,6 +83,26 @@ class ActivityDetail(Resource):
             ns.abort(404, str(e))
         except PermissionError as e:
             ns.abort(403, str(e))
+
+    @jwt_required()
+    @ns.expect(update_model, validate=True)
+    @ns.response(200, "Activity updated")
+    @ns.response(400, "Validation error or content rejected")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(403, "Not your activity")
+    @ns.response(404, "Activity not found")
+    def put(self, activity_id):
+        """Modifie les champs d'une activité existante."""
+        user_id = get_jwt_identity()
+        try:
+            activity = facade.update_activity(activity_id, user_id, ns.payload)
+            return activity.to_dict(), 200
+        except LookupError as e:
+            ns.abort(404, str(e))
+        except PermissionError as e:
+            ns.abort(403, str(e))
+        except ValueError as e:
+            ns.abort(400, str(e))
 
     @jwt_required()
     @ns.response(204, "Activity deleted")

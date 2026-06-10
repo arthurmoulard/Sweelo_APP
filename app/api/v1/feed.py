@@ -17,14 +17,13 @@ report_model = ns.model("Report", {
 class Feed(Resource):
 
     @jwt_required()
-    @ns.response(200, "List of posts")
+    @ns.response(200, "Paginated feed")
     @ns.response(401, "Missing or invalid token")
     def get(self):
         from flask import request
         user_id = get_jwt_identity()
         page = int(request.args.get("page", 1))
-        posts = facade.get_feed(user_id, page=page)
-        return [p.to_dict(current_user_id=user_id) for p in posts], 200
+        return facade.get_feed(user_id, page=page), 200
 
 
 @ns.route("/<string:post_id>/like")
@@ -47,6 +46,18 @@ class Like(Resource):
 class Comments(Resource):
 
     @jwt_required()
+    @ns.response(200, "List of comments")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(404, "Post not found")
+    def get(self, post_id):
+        from flask import request as req
+        page = int(req.args.get("page", 1))
+        try:
+            return facade.get_post_comments(post_id, page), 200
+        except LookupError as e:
+            ns.abort(404, str(e))
+
+    @jwt_required()
     @ns.expect(comment_model, validate=True)
     @ns.response(201, "Comment created")
     @ns.response(400, "Content rejected by moderation")
@@ -63,17 +74,39 @@ class Comments(Resource):
             ns.abort(400, str(e))
 
 
+@ns.route("/comments/<string:comment_id>")
+class CommentDetail(Resource):
+
+    @jwt_required()
+    @ns.response(204, "Comment deleted")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(403, "Not your comment")
+    @ns.response(404, "Comment not found")
+    def delete(self, comment_id):
+        """Supprime son propre commentaire."""
+        user_id = get_jwt_identity()
+        try:
+            facade.delete_comment(comment_id, user_id)
+            return "", 204
+        except LookupError as e:
+            ns.abort(404, str(e))
+        except PermissionError as e:
+            ns.abort(403, str(e))
+
+
 @ns.route("/<string:post_id>/report")
 class ReportPost(Resource):
 
     @jwt_required()
     @ns.expect(report_model, validate=True)
     @ns.response(200, "Report submitted")
-    @ns.response(400, "Validation error")
     @ns.response(401, "Missing or invalid token")
     @ns.response(404, "Post not found")
     def post(self, post_id):
+        from app.models.feed_post import FeedPost
         user_id = get_jwt_identity()
+        if not FeedPost.query.get(post_id):
+            ns.abort(404, "Post not found")
         facade.report_content(
             reporter_id=user_id,
             target_type="post",

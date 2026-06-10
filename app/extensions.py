@@ -1,22 +1,23 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 
-# Extensions Flask — créées ici, initialisées dans create_app()
 db  = SQLAlchemy()
 jwt = JWTManager()
 
-# Façade — instanciée dans create_app() après init des extensions
 facade = None
 
 
 def init_facade():
-    """
-    Instancie la SweeloFacade après l'init de SQLAlchemy.
-    Appelée depuis create_app() une fois db.init_app(app) fait.
-    """
     global facade
     from app.services.facade import SweeloFacade
     facade = SweeloFacade()
+
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    from app.models.token_blocklist import TokenBlocklist
+    jti = jwt_payload["jti"]
+    return db.session.query(TokenBlocklist.id).filter_by(jti=jti).first() is not None
 
 
 

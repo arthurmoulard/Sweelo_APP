@@ -15,6 +15,32 @@ def admin_required():
         ns.abort(403, "Admin access required")
 
 
+@ns.route("/users")
+class UserList(Resource):
+
+    @jwt_required()
+    @ns.response(200, "List of all users")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(403, "Admin access required")
+    def get(self):
+        """Liste tous les utilisateurs (paginée)."""
+        from flask import request
+        admin_required()
+        page     = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 20))
+        from app.models.user import User
+        p = User.query.order_by(User.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        return {
+            "items":       [u.to_dict() for u in p.items],
+            "page":        p.page,
+            "total_pages": p.pages,
+            "total":       p.total,
+            "has_next":    p.has_next,
+        }, 200
+
+
 @ns.route("/reports")
 class Reports(Resource):
 
