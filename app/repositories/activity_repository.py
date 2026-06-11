@@ -18,8 +18,16 @@ class ActivityRepository(BaseRepository):
             .filter_by(user_id=user_id)
             .order_by(Activity.date.desc())
             .paginate(page=page, per_page=limit, error_out=False)
-            .items
         )
+
+    def update(self, activity, data):
+        allowed = {"distance_km", "duration_min", "date", "notes", "extra_data"}
+        for key, value in data.items():
+            if key in allowed:
+                setattr(activity, key, value)
+        from app.extensions import db
+        db.session.commit()
+        return activity
 
     def get_stats(self, user_id):
         result = (

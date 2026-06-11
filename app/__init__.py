@@ -52,6 +52,7 @@ def create_app(config_name: str = "default") -> Flask:
 
     # ── 5. Création des tables BDD (si inexistantes) ──────────────────────────
     with app.app_context():
+        from app.models.token_blocklist import TokenBlocklist  # noqa: F401
         db.create_all()
 
     return app
