@@ -112,9 +112,6 @@ input.valid { border-color: var(--success); }
 .hint.err { color: var(--error); }
 .hint.ok  { color: var(--success); }
 
-.strength-bar { height: 4px; border-radius: 4px; background: var(--border); overflow: hidden; margin-top: 2px; }
-.strength-bar-fill { height: 100%; border-radius: 4px; width: 0%; transition: width .3s ease, background .3s ease; }
-
 .btn-submit {
   margin-top: 4px; padding: 14px;
   background: linear-gradient(135deg, var(--primary), var(--primary-h));
