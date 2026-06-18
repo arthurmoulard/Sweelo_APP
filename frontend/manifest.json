@@ -1,0 +1,14 @@
+{
+  "name": "Sweelo",
+  "short_name": "Sweelo",
+  "description": "Suivi sportif et réseau social pour athlètes amateurs",
+  "start_url": "/frontend/index.html",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#60a5fa",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/frontend/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/frontend/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

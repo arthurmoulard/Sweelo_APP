@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sweelo</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#60a5fa" />
+</head>
+<body>
+  <script>
+    if (localStorage.getItem('sw_access_token')) {
+      window.location.replace('./pages/feed/feed.html');
+    } else {
+      window.location.replace('./pages/login/login.html');
+    }
+  </script>
+</body>
+</html>
