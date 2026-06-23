@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sweelo — Profil</title>
+  <link rel="stylesheet" href="profile.css" />
+</head>
+<body>
+
+  <nav class="topnav">
+    <a href="../../index.html" class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.5 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM9.9 19.1l1-4.4 2.1 2V22h2v-5.7l-2.1-2 .6-3c1.3 1.5 3.3 2.7 5.5 2.7v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 10.3V15h2v-3.4l2.1-.8-1.8 8.3H6l-1 2h4.1l.8-2Z"/>
+        </svg>
+      </div>
+      <span>Swee<em>lo</em></span>
+    </a>
+
+    <div class="nav-links">
+      <a href="../feed/feed.html">Feed</a>
+      <a href="../activities/activities.html">Activités</a>
+      <a href="../friends/friends.html">Amis</a>
+      <a href="profile.html" class="active">Profil</a>
+    </div>
+
+    <button id="logout-btn" class="btn-logout">Déconnexion</button>
+  </nav>
+
+  <main>
+
+    <section class="profile-card" id="profile-card">
+      <div class="avatar" id="avatar">—</div>
+      <div class="profile-info">
+        <h1 id="username">Chargement…</h1>
+        <p id="email" class="muted"></p>
+        <p id="join-date" class="muted"></p>
+      </div>
+      <button id="edit-btn" class="btn-primary">Modifier le profil</button>
+    </section>
+
+    <section class="stats-row">
+      <div class="stat-card">
+        <span class="stat-value" id="stat-activities">—</span>
+        <span class="stat-label">Activités</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-km">—</span>
+        <span class="stat-label">Kilomètres</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-hours">—</span>
+        <span class="stat-label">Heures</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-friends">—</span>
+        <span class="stat-label">Amis</span>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <h2>Mes amis</h2>
+      <div id="friends-list" class="friends-grid">
+        <p class="placeholder">Chargement…</p>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="edit-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <h2 id="modal-title">Modifier le profil</h2>
+
+      <div id="modal-alert" class="alert hidden" role="alert"></div>
+
+      <div class="field">
+        <label for="edit-username">Nom d'utilisateur</label>
+        <input type="text" id="edit-username" autocomplete="username" />
+        <span class="hint" id="err-username"></span>
+      </div>
+
+      <div class="field">
+        <label for="edit-email">Adresse e-mail</label>
+        <input type="email" id="edit-email" autocomplete="email" />
+        <span class="hint" id="err-email"></span>
+      </div>
+
+      <div class="field">
+        <label for="edit-password">Nouveau mot de passe <span class="label-opt">(laisser vide pour ne pas changer)</span></label>
+        <input type="password" id="edit-password" autocomplete="new-password" />
+        <span class="hint" id="err-password"></span>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancel-btn" class="btn-secondary">Annuler</button>
+        <button id="save-btn" class="btn-primary">
+          Enregistrer
+          <span class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="profile.js"></script>
+</body>
+</html>

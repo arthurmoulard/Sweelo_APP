@@ -43,9 +43,17 @@ class FeedPost(BaseModel):
         base.update({
             "activity_id":    self.activity_id,
             "user_id":        self.user_id,
+            "username":       self.author.username if self.author else None,
             "likes_count":    self.likes_count,
             "photo_url":      self.photo_url,
             "comments_count": self.comments.count(),
+            "activity": {
+                "type":         self.activity.type,
+                "distance_km":  self.activity.distance_km,
+                "duration_min": self.activity.duration_min,
+                "date":         self.activity.date.isoformat(),
+                "notes":        self.activity.notes,
+            } if self.activity else None,
         })
         if current_user_id:
             base["user_has_liked"] = self.liked_by.filter_by(id=current_user_id).count() > 0

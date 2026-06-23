@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from app.config import config
 from app.extensions import db, jwt, init_facade
 
@@ -20,6 +21,7 @@ def create_app(config_name: str = "default") -> Flask:
     app.config.from_object(config[config_name])
 
     # ── 2. Initialisation des extensions ──────────────────────────────────────
+    CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
     db.init_app(app)
     jwt.init_app(app)
 

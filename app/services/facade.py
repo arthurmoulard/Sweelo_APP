@@ -37,8 +37,10 @@ class SweeloFacade:
     def create_activity(self, user_id, data):
         from datetime import date
         try:
-            if date.fromisoformat(data.get("date", "")) > date.today():
+            parsed = date.fromisoformat(data.get("date", ""))
+            if parsed > date.today():
                 raise ValueError("Activity date cannot be in the future")
+            data["date"] = parsed
         except (TypeError, ValueError) as exc:
             if "future" in str(exc):
                 raise
@@ -73,8 +75,10 @@ class SweeloFacade:
         from datetime import date
         if "date" in data:
             try:
-                if date.fromisoformat(data["date"]) > date.today():
+                parsed = date.fromisoformat(data["date"])
+                if parsed > date.today():
                     raise ValueError("Activity date cannot be in the future")
+                data["date"] = parsed
             except (TypeError, ValueError) as exc:
                 if "future" in str(exc):
                     raise
@@ -120,8 +124,11 @@ class SweeloFacade:
         return {"likes_count": post.likes_count, "liked": True}
 
     def create_comment(self, post_id, user_id, content):
-        if not self.feed_repository.get_post(post_id):
+        post = self.feed_repository.get_post(post_id)
+        if not post:
             raise LookupError("Post not found")
+        if post.user_id == user_id:
+            raise ValueError("Cannot comment on your own post")
         safe, reason = self.moderation.check(content)
         if not safe:
             raise ValueError(f"Content rejected ({reason})")
