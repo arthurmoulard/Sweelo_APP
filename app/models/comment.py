@@ -26,9 +26,10 @@ class Comment(BaseModel):
     def to_dict(self) -> dict:
         base = super().to_dict()
         base.update({
-            "post_id": self.post_id,
-            "user_id": self.user_id,
-            "content": self.content,
+            "post_id":  self.post_id,
+            "user_id":  self.user_id,
+            "username": self.author.username if self.author else None,
+            "content":  self.content,
         })
         return base
     

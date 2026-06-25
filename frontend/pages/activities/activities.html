@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sweelo — Activités</title>
+  <link rel="stylesheet" href="activities.css" />
+</head>
+<body>
+
+  <nav class="topnav">
+    <a href="../../index.html" class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.5 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM9.9 19.1l1-4.4 2.1 2V22h2v-5.7l-2.1-2 .6-3c1.3 1.5 3.3 2.7 5.5 2.7v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 10.3V15h2v-3.4l2.1-.8-1.8 8.3H6l-1 2h4.1l.8-2Z"/>
+        </svg>
+      </div>
+      <span>Swee<em>lo</em></span>
+    </a>
+
+    <div class="nav-links">
+      <a href="../feed/feed.html">Feed</a>
+      <a href="activities.html" class="active">Activités</a>
+      <a href="../friends/friends.html">Amis</a>
+      <a href="../profile/profile.html">Profil</a>
+    </div>
+
+    <button id="logout-btn" class="btn-logout">Déconnexion</button>
+  </nav>
+
+  <main>
+
+    <div class="page-header">
+      <h1>Mes activités</h1>
+      <button id="new-btn" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nouvelle activité
+      </button>
+    </div>
+
+    <div id="activities-container"></div>
+
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M13.5 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM9.9 19.1l1-4.4 2.1 2V22h2v-5.7l-2.1-2 .6-3c1.3 1.5 3.3 2.7 5.5 2.7v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 10.3V15h2v-3.4l2.1-.8-1.8 8.3H6l-1 2h4.1l.8-2Z"/>
+        </svg>
+      </div>
+      <h2>Aucune activité</h2>
+      <p>Enregistre ta première séance pour la voir apparaître ici.</p>
+      <button id="new-btn-empty" class="btn-primary">Commencer maintenant</button>
+    </div>
+
+    <div id="loader" class="loader hidden"><span class="spinner-lg"></span></div>
+
+    <button id="load-more" class="btn-load-more hidden">Charger plus</button>
+
+    <p id="list-end" class="list-end hidden">Toutes tes activités sont affichées.</p>
+
+  </main>
+
+  <!-- Create / Edit modal -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+
+      <div class="modal-head">
+        <h2 id="modal-title">Nouvelle activité</h2>
+        <button id="modal-close" class="btn-icon" aria-label="Fermer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="modal-alert" class="alert hidden" role="alert"></div>
+
+      <!-- Sport type grid -->
+      <div class="field" id="type-field">
+        <label>Type de sport</label>
+        <div class="sport-grid" id="sport-grid"></div>
+        <span class="hint" id="err-type"></span>
+      </div>
+
+      <!-- Date -->
+      <div class="field">
+        <label for="f-date">Date</label>
+        <input type="date" id="f-date" />
+        <span class="hint" id="err-date"></span>
+      </div>
+
+      <!-- Duration -->
+      <div class="field">
+        <label for="f-duration">Durée (minutes)</label>
+        <input type="number" id="f-duration" min="1" max="1440" placeholder="ex: 45" />
+        <span class="hint" id="err-duration"></span>
+      </div>
+
+      <!-- Distance (hidden for no-distance sports) -->
+      <div class="field" id="distance-field">
+        <label for="f-distance">Distance (km)</label>
+        <input type="number" id="f-distance" min="0.001" step="0.1" placeholder="ex: 10.5" />
+        <span class="hint" id="err-distance"></span>
+      </div>
+
+      <!-- Notes -->
+      <div class="field">
+        <label for="f-notes">Notes <span class="label-opt">(optionnel)</span></label>
+        <textarea id="f-notes" rows="3" maxlength="500" placeholder="Ressenti, conditions, objectifs…"></textarea>
+        <span class="char-count" id="char-count">0 / 500</span>
+      </div>
+
+      <div class="modal-actions">
+        <button id="delete-btn" class="btn-danger hidden">Supprimer</button>
+        <div class="modal-actions-right">
+          <button id="cancel-btn" class="btn-secondary">Annuler</button>
+          <button id="save-btn" class="btn-primary">
+            Enregistrer
+            <span class="spinner"></span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Delete confirm modal -->
+  <div id="confirm-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box--sm">
+      <h2>Supprimer l'activité ?</h2>
+      <p class="muted">Cette action est irréversible. L'activité et son post dans le feed seront supprimés.</p>
+      <div class="modal-actions" style="margin-top:1.25rem">
+        <button id="confirm-cancel" class="btn-secondary">Annuler</button>
+        <button id="confirm-delete" class="btn-danger">
+          Supprimer
+          <span class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="activities.js"></script>
+</body>
+</html>
