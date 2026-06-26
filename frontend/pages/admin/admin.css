@@ -1,0 +1,602 @@
+/* ============================================================
+   SWEELO — admin.css
+   Styles spécifiques à la page d'administration.
+   Dépend des variables définies dans login.css (:root).
+   ============================================================ */
+
+/* ── Body override — pas de centrage vertical comme login ── */
+body {
+  display: block;
+  padding: 0;
+  background-image:
+    radial-gradient(ellipse 60% 30% at 90% 0%, rgba(255,107,53,.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 0% 100%, rgba(78,205,196,.05) 0%, transparent 60%);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.admin-header__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.brand-name span { color: var(--primary); }
+
+.admin-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--primary);
+  background: rgba(255,107,53,.12);
+  border: 1px solid rgba(255,107,53,.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* ============================================================
+   ALERTE GLOBALE
+   ============================================================ */
+.alert {
+  display: none;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 16px 24px 0;
+  align-items: flex-start;
+  gap: 10px;
+}
+.alert.show       { display: flex; }
+.alert svg        { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; }
+.alert.alert-error   { background: rgba(255,77,106,.12); border: 1px solid rgba(255,77,106,.3);  color: #ff7a90; }
+.alert.alert-success { background: rgba(78,205,196,.12); border: 1px solid rgba(78,205,196,.3);  color: var(--accent); }
+
+/* ============================================================
+   STATS RAPIDES
+   ============================================================ */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-card--danger {
+  border-color: rgba(255,77,106,.25);
+}
+
+.stat-card__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.stat-card--danger .stat-card__value {
+  color: var(--error);
+}
+
+.stat-card__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ============================================================
+   ONGLETS
+   ============================================================ */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color var(--transition), border-color var(--transition);
+  margin-bottom: -1px;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab--active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tab-count {
+  background: rgba(255,107,53,.15);
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 99px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* ============================================================
+   PANELS
+   ============================================================ */
+.tab-panel { animation: fadeIn .2s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hidden { display: none !important; }
+
+/* ============================================================
+   FILTRES
+   ============================================================ */
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.filter-select {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-family: inherit;
+  padding: 8px 14px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  appearance: none;
+}
+
+.filter-select:focus { border-color: var(--primary); }
+
+/* ============================================================
+   ÉTAT CHARGEMENT
+   ============================================================ */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 64px 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+.spinner--lg {
+  width: 36px;
+  height: 36px;
+  border-width: 3px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   ÉTAT VIDE
+   ============================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  gap: 12px;
+  text-align: center;
+}
+
+.empty-state__icon  { font-size: 36px; opacity: 0.4; }
+.empty-state__title { font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; color: var(--muted); }
+.empty-state__text  { font-size: 0.82rem; color: var(--muted); opacity: 0.6; max-width: 280px; }
+
+/* ============================================================
+   LISTE DES SIGNALEMENTS
+   ============================================================ */
+.reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color var(--transition);
+}
+
+.report-card:hover { border-color: rgba(255,107,53,.2); }
+
+.report-card--pending  { border-left: 3px solid var(--error); }
+.report-card--reviewed { border-left: 3px solid var(--success); opacity: 0.7; }
+.report-card--dismissed{ border-left: 3px solid var(--muted); opacity: 0.6; }
+
+/* En-tête du signalement */
+.report-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.report-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Badges type et statut */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.badge--post     { background: rgba(78,205,196,.12); color: var(--accent); }
+.badge--comment  { background: rgba(255,107,53,.12); color: var(--primary); }
+.badge--pending  { background: rgba(255,77,106,.12); color: var(--error); }
+.badge--reviewed { background: rgba(78,205,196,.12); color: var(--success); }
+.badge--dismissed{ background: rgba(122,122,154,.12); color: var(--muted); }
+
+.report-card__date {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Contenu signalé */
+.report-card__content {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.5;
+  border-left: 2px solid var(--border);
+}
+
+.report-card__content-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* Raison du signalement */
+.report-card__reason {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.report-card__reason strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Actions */
+.report-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   BOUTONS (harmonisés avec login.css)
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: opacity var(--transition), transform var(--transition), background var(--transition);
+  white-space: nowrap;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.btn--primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-h));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255,107,53,.25);
+}
+.btn--primary:hover:not(:disabled) { opacity: .88; }
+
+.btn--secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn--secondary:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--muted);
+}
+.btn--ghost:hover:not(:disabled) { color: var(--text); background: var(--surface2); }
+
+.btn--danger {
+  background: rgba(255,77,106,.12);
+  color: var(--error);
+  border: 1px solid rgba(255,77,106,.25);
+}
+.btn--danger:hover:not(:disabled) { background: rgba(255,77,106,.2); }
+
+.btn--success {
+  background: rgba(78,205,196,.12);
+  color: var(--success);
+  border: 1px solid rgba(78,205,196,.25);
+}
+.btn--success:hover:not(:disabled) { background: rgba(78,205,196,.2); }
+
+.btn--sm { padding: 6px 12px; font-size: 0.78rem; }
+
+/* ============================================================
+   RECHERCHE UTILISATEURS
+   ============================================================ */
+.search-bar {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-bar svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  padding: 12px 14px 12px 42px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255,107,53,.12);
+}
+
+/* ============================================================
+   TABLEAU UTILISATEURS
+   ============================================================ */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.users-table thead {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.users-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.users-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.users-table tbody tr:last-child td { border-bottom: none; }
+
+.users-table tbody tr {
+  background: var(--surface);
+  transition: background var(--transition);
+}
+.users-table tbody tr:hover { background: var(--surface2); }
+
+/* Cellule utilisateur avec avatar initiale */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-username { font-weight: 600; }
+.user-email    { color: var(--muted); font-size: 0.82rem; }
+
+/* Badge statut utilisateur */
+.status-active { color: var(--success); font-weight: 600; font-size: 0.78rem; }
+.status-banned { color: var(--error);   font-weight: 600; font-size: 0.78rem; }
+
+/* ============================================================
+   MODALE DE CONFIRMATION
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+  animation: fadeIn .15s ease;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  animation: slideUp .2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.modal__body {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+  .page { padding: 20px 16px 48px; }
+
+  .stats-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .filters { flex-direction: column; }
+
+  .report-card__actions { flex-direction: column; }
+  .report-card__actions .btn { width: 100%; justify-content: center; }
+
+  .users-table th:nth-child(2),
+  .users-table td:nth-child(2) { display: none; } /* masque colonne email sur mobile */
+
+  .modal { padding: 24px 20px; }
+  .modal__actions { flex-direction: column-reverse; }
+  .modal__actions .btn { width: 100%; justify-content: center; }
+}
