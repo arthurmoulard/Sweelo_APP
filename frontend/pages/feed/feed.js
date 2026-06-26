@@ -1,3 +1,4 @@
+// ── Config ────────────────────────────────────────────────────────────────────
 const API_BASE = 'http://localhost:5000/api/v1';
 
 if (!localStorage.getItem('sw_access_token')) {
@@ -117,7 +118,7 @@ function renderPost(post) {
     <div class="post-header">
       <div class="post-avatar">${initials(post.username)}</div>
       <div class="post-meta">
-        <span class="post-author">${escapeHtml(post.username || '—')}</span>
+        <a href="../user/user.html?id=${post.user_id}" class="post-author">${escapeHtml(post.username || '—')}</a>
         <span class="post-time">${timeAgo(post.created_at)}</span>
       </div>
     </div>

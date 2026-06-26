@@ -140,7 +140,7 @@ form.addEventListener('submit', async (e) => {
       showAlert('success', `Compte créé ! Bienvenue, ${data.username} 🎉 Redirection…`);
       form.reset();
       document.getElementById('strength-fill').style.width = '0%';
-      setTimeout(() => { window.location.href = 'login.html'; }, 2200);
+      setTimeout(() => { window.location.href = '../login/login.html'; }, 2200);
     } else if (res.status === 409) {
       showAlert('error', data.message || 'Cet e-mail ou ce pseudo est déjà utilisé.');
     } else if (res.status === 400) {

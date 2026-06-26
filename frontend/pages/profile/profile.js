@@ -1,8 +1,11 @@
+// ── Config ────────────────────────────────────────────────────────────────────
 const API_BASE = 'http://localhost:5000/api/v1';
 
 if (!localStorage.getItem('sw_access_token')) {
   window.location.replace('../../index.html');
 }
+
+// ── API helper ────────────────────────────────────────────────────────────────
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {

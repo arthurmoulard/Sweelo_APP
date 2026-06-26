@@ -152,7 +152,11 @@ main {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text);
+  text-decoration: none;
+  transition: color var(--transition);
 }
+.post-author:hover { color: var(--primary); }
 
 .post-time {
   font-size: 0.78rem;

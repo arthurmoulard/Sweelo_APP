@@ -12,7 +12,7 @@
    ============================================================ */
 
 const API_BASE   = 'http://localhost:5000/api/v1';
-const TOKEN_KEY  = 'sweelo_access_token';
+const TOKEN_KEY  = 'sw_access_token';
 
 /* ============================================================
    1. UTILITAIRES AUTH
@@ -45,13 +45,13 @@ function guardAdmin() {
 
   if (!token || isTokenExpired(token)) {
     localStorage.removeItem(TOKEN_KEY);
-    window.location.replace('../pages/login.html');
+    window.location.replace('../login/login.html');
     return false;
   }
 
   const payload = decodeToken(token);
   if (!payload?.is_admin) {
-    window.location.replace('../pages/feed.html');
+    window.location.replace('../feed/feed.html');
     return false;
   }
 
@@ -81,7 +81,7 @@ async function apiFetch(path, options = {}) {
   // Token expiré côté serveur → logout
   if (res.status === 401) {
     localStorage.removeItem(TOKEN_KEY);
-    window.location.replace('../pages/login.html');
+    window.location.replace('../login/login.html');
     return null;
   }
 
@@ -567,7 +567,7 @@ document.getElementById('logout-btn').addEventListener('click', () => {
     'Tu vas être déconnecté de l\'interface d\'administration.',
     () => {
       localStorage.removeItem(TOKEN_KEY);
-      window.location.replace('../pages/login.html');
+      window.location.replace('../login/login.html');
     }
   );
 });

@@ -1,10 +1,35 @@
 /* ============================================================
    SWEELO — admin.css
-   Styles spécifiques à la page d'administration.
-   Dépend des variables définies dans login.css (:root).
    ============================================================ */
 
-/* ── Body override — pas de centrage vertical comme login ── */
+/* ── Variables de design (identiques aux autres pages) ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d1a;
+  --surface:    #161625;
+  --surface2:   #1e1e30;
+  --border:     #2a2a40;
+  --primary:    #ff6b35;
+  --primary-h:  #e85520;
+  --accent:     #4ecdc4;
+  --text:       #f0f0fa;
+  --muted:      #7a7a9a;
+  --error:      #ff4d6a;
+  --success:    #4ecdc4;
+  --radius:     14px;
+  --transition: 0.2s ease;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
 body {
   display: block;
   padding: 0;
