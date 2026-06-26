@@ -31,7 +31,17 @@
   <main>
 
     <section class="profile-card" id="profile-card">
-      <div class="avatar" id="avatar">—</div>
+      <div class="avatar-wrapper" id="avatar-wrapper" title="Changer la photo de profil">
+        <div class="avatar" id="avatar">—</div>
+        <div class="avatar-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+        <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+      </div>
       <div class="profile-info">
         <h1 id="username">Chargement…</h1>
         <p id="email" class="muted"></p>

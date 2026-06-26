@@ -22,6 +22,7 @@ class User(BaseModel):
     email         = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     username      = db.Column(db.String(80),  unique=True, nullable=False)
+    avatar_url    = db.Column(db.String(500), nullable=True)
     is_admin      = db.Column(db.Boolean,     nullable=False, default=False)
     is_banned     = db.Column(db.Boolean,     nullable=False, default=False)
 
@@ -64,10 +65,11 @@ class User(BaseModel):
     def to_dict(self) -> dict:
         base = super().to_dict()
         base.update({
-            "email":    self.email,
-            "username": self.username,
-            "is_admin": self.is_admin,
-            "is_banned": self.is_banned,
+            "email":      self.email,
+            "username":   self.username,
+            "avatar_url": self.avatar_url,
+            "is_admin":   self.is_admin,
+            "is_banned":  self.is_banned,
         })
         return base
     

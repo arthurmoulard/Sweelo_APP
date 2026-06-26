@@ -70,7 +70,12 @@ async function loadProfile() {
   document.title = `Sweelo — ${profile.username}`;
 
   // Remplit la carte de profil
-  document.getElementById('avatar').textContent    = initials(profile.username);
+  const avatarEl = document.getElementById('avatar');
+  if (profile.avatar_url) {
+    avatarEl.innerHTML = `<img src="${profile.avatar_url}" alt="${initials(profile.username)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+  } else {
+    avatarEl.textContent = initials(profile.username);
+  }
   document.getElementById('username').textContent  = profile.username;
   document.getElementById('join-date').textContent = formatJoinDate(profile.created_at);
 

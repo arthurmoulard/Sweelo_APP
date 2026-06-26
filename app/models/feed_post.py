@@ -41,10 +41,11 @@ class FeedPost(BaseModel):
     def to_dict(self, current_user_id: str = None) -> dict:
         base = super().to_dict()
         base.update({
-            "activity_id":    self.activity_id,
-            "user_id":        self.user_id,
-            "username":       self.author.username if self.author else None,
-            "likes_count":    self.likes_count,
+            "activity_id":       self.activity_id,
+            "user_id":           self.user_id,
+            "username":          self.author.username   if self.author else None,
+            "author_avatar_url": self.author.avatar_url if self.author else None,
+            "likes_count":       self.likes_count,
             "photo_url":      self.photo_url,
             "comments_count": self.comments.count(),
             "activity": {

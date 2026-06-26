@@ -36,12 +36,21 @@ function formatJoinDate(iso) {
 
 // ── Load profile ──────────────────────────────────────────────────────────────
 
+function setAvatar(avatarUrl, username) {
+  const avatarEl = document.getElementById('avatar');
+  if (avatarUrl) {
+    avatarEl.innerHTML = `<img src="${avatarUrl}" alt="${initials(username)}" />`;
+  } else {
+    avatarEl.textContent = initials(username);
+  }
+}
+
 async function loadProfile() {
   const res = await apiFetch('/users/me');
   if (!res.ok) return;
   const data = await res.json();
 
-  document.getElementById('avatar').textContent    = initials(data.username);
+  setAvatar(data.avatar_url, data.username);
   document.getElementById('username').textContent  = data.username;
   document.getElementById('email').textContent     = data.email;
   document.getElementById('join-date').textContent = formatJoinDate(data.created_at);
@@ -52,6 +61,38 @@ async function loadProfile() {
   document.getElementById('edit-username').value = data.username;
   document.getElementById('edit-email').value    = data.email;
 }
+
+// ── Avatar upload ─────────────────────────────────────────────────────────────
+
+const avatarWrapper = document.getElementById('avatar-wrapper');
+const avatarInput   = document.getElementById('avatar-input');
+
+avatarWrapper.addEventListener('click', () => avatarInput.click());
+
+avatarInput.addEventListener('change', async () => {
+  const file = avatarInput.files[0];
+  if (!file) return;
+
+  const wrapper = document.getElementById('avatar-wrapper');
+  wrapper.classList.add('avatar-uploading');
+
+  const fd = new FormData();
+  fd.append('avatar', file);
+
+  const res = await fetch(`${API_BASE}/users/me/avatar`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('sw_access_token')}` },
+    body: fd,
+  });
+
+  wrapper.classList.remove('avatar-uploading');
+  avatarInput.value = '';
+
+  if (res.ok) {
+    const data = await res.json();
+    setAvatar(data.avatar_url, document.getElementById('username').textContent);
+  }
+});
 
 // ── Load stats ────────────────────────────────────────────────────────────────
 

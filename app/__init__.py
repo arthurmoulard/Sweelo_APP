@@ -56,6 +56,13 @@ def create_app(config_name: str = "default") -> Flask:
     with app.app_context():
         from app.models.token_blocklist import TokenBlocklist  # noqa: F401
         db.create_all()
+        # Migration légère : ajoute avatar_url si la colonne n'existe pas encore
+        from sqlalchemy import text
+        try:
+            db.session.execute(text('ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500)'))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
     return app
 

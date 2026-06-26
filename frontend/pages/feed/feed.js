@@ -114,9 +114,13 @@ function renderPost(post) {
   const article = document.createElement('article');
   article.className = 'post-card';
   article.dataset.postId = post.id;
+  const avatarContent = post.author_avatar_url
+    ? `<img src="${escapeHtml(post.author_avatar_url)}" alt="${initials(post.username)}" />`
+    : initials(post.username);
+
   article.innerHTML = `
     <div class="post-header">
-      <div class="post-avatar">${initials(post.username)}</div>
+      <div class="post-avatar">${avatarContent}</div>
       <div class="post-meta">
         <a href="../user/user.html?id=${post.user_id}" class="post-author">${escapeHtml(post.username || '—')}</a>
         <span class="post-time">${timeAgo(post.created_at)}</span>
