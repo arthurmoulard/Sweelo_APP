@@ -123,6 +123,14 @@ main {
 
 .activity-date { font-size: .78rem; color: var(--muted); white-space: nowrap; }
 
+.activity-photo-badge {
+  display: inline-flex; align-items: center;
+  color: var(--accent);
+  margin-left: auto;
+  margin-right: .3rem;
+  flex-shrink: 0;
+}
+
 .activity-stats {
   display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .3rem;
 }
@@ -339,6 +347,69 @@ textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,10
 .modal-actions-right { display: flex; gap: .75rem; margin-left: auto; }
 
 .muted { color: var(--muted); font-size: .875rem; }
+
+/* ── Zone upload photo ────────────────────────────────── */
+
+.photo-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  user-select: none;
+}
+.photo-drop:hover,
+.photo-drop.drag-over {
+  border-color: var(--primary);
+  background: rgba(255,107,53,.05);
+  color: var(--text);
+}
+.photo-drop svg { width: 32px; height: 32px; opacity: .5; }
+
+.photo-filename {
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-top: 4px;
+  display: block;
+}
+
+/* Photo existante en mode édition */
+.photo-current {
+  position: relative;
+  margin-bottom: 10px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  max-height: 200px;
+}
+.photo-current img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.btn-photo-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px; height: 28px;
+  background: rgba(0,0,0,.65);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--transition);
+}
+.btn-photo-remove:hover { background: var(--error); }
+.btn-photo-remove svg { width: 14px; height: 14px; }
 
 /* ── Responsive ───────────────────────────────────────── */
 

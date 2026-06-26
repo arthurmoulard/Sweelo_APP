@@ -98,6 +98,16 @@ function renderCard(activity) {
     ? `<p class="activity-notes">${escapeHtml(activity.notes)}</p>`
     : '';
 
+  const photoBadge = activity.photo_url
+    ? `<span class="activity-photo-badge" title="Contient une photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+      </span>`
+    : '';
+
   const div = document.createElement('div');
   div.className = 'activity-card';
   div.dataset.activityId = activity.id;
@@ -106,6 +116,7 @@ function renderCard(activity) {
     <div class="activity-body">
       <div class="activity-top">
         <span class="activity-label">${sport.label}</span>
+        ${photoBadge}
         <span class="activity-date">${formatDate(activity.date)}</span>
       </div>
       <div class="activity-stats">${stats.join('')}</div>
@@ -207,6 +218,92 @@ function selectSport(key) {
     NO_DISTANCE.has(key) ? 'none' : '';
 }
 
+// ── Gestion de la photo ───────────────────────────────────────────────────────
+
+// stocke l'ID du post lié à l'activité en cours d'édition (pour l'upload)
+let currentPostId   = null;
+// indique si l'utilisateur veut supprimer la photo existante
+let pendingRemovePhoto = false;
+
+const photoInput   = document.getElementById('f-photo');
+const photoDrop    = document.getElementById('photo-drop');
+const photoLabel   = document.getElementById('photo-label');
+const photoFilename = document.getElementById('photo-filename');
+const photoCurrent = document.getElementById('photo-current');
+const photoPreview = document.getElementById('photo-preview');
+const photoRemove  = document.getElementById('photo-remove');
+
+// Met à jour le label quand l'utilisateur sélectionne un fichier
+photoInput.addEventListener('change', () => {
+  if (photoInput.files[0]) {
+    photoFilename.textContent = photoInput.files[0].name;
+    photoFilename.classList.remove('hidden');
+    photoLabel.textContent = 'Changer la photo';
+  }
+});
+
+// Drag & drop sur la zone de sélection
+photoDrop.addEventListener('dragover', e => { e.preventDefault(); photoDrop.classList.add('drag-over'); });
+photoDrop.addEventListener('dragleave', () => photoDrop.classList.remove('drag-over'));
+photoDrop.addEventListener('drop', e => {
+  e.preventDefault();
+  photoDrop.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    // Injecte le fichier dans l'input natif
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    photoInput.files = dt.files;
+    photoFilename.textContent = file.name;
+    photoFilename.classList.remove('hidden');
+    photoLabel.textContent = 'Changer la photo';
+  }
+});
+
+// Bouton de suppression de la photo existante
+photoRemove.addEventListener('click', () => {
+  pendingRemovePhoto = true;
+  photoCurrent.classList.add('hidden');
+  photoPreview.src = '';
+  photoLabel.textContent = 'Cliquer ou glisser une photo ici';
+  photoFilename.classList.add('hidden');
+  photoInput.value = '';
+});
+
+function resetPhotoField() {
+  pendingRemovePhoto = false;
+  currentPostId      = null;
+  photoInput.value   = '';
+  photoFilename.textContent = '';
+  photoFilename.classList.add('hidden');
+  photoCurrent.classList.add('hidden');
+  photoPreview.src = '';
+  photoLabel.textContent = 'Cliquer ou glisser une photo ici';
+}
+
+// Upload la photo sélectionnée vers le backend, retourne la photo_url ou null
+async function uploadPhoto(postId) {
+  if (!photoInput.files[0]) return null;
+  const fd = new FormData();
+  fd.append('photo', photoInput.files[0]);
+  // On n'utilise pas apiFetch car on envoie multipart (pas JSON)
+  const res = await fetch(`${API_BASE}/feed/${postId}/photo`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('sw_access_token')}` },
+    body: fd,
+  });
+  if (res.ok) {
+    const data = await res.json();
+    return data.photo_url || null;
+  }
+  return null;
+}
+
+// Supprime la photo via l'API
+async function deletePhoto(postId) {
+  await apiFetch(`/feed/${postId}/photo`, { method: 'DELETE' });
+}
+
 // ── Open / close modal ────────────────────────────────────────────────────────
 
 function openModal(activity = null) {
@@ -217,6 +314,7 @@ function openModal(activity = null) {
   deleteBtn.classList.toggle('hidden', !activity);
   clearAlert();
   clearErrors();
+  resetPhotoField();
 
   // Reset sport grid
   sportGrid.querySelectorAll('.sport-btn').forEach(b => b.classList.remove('selected'));
@@ -229,7 +327,17 @@ function openModal(activity = null) {
   document.getElementById('f-notes').value    = activity ? (activity.notes ?? '') : '';
   updateCharCount();
 
-  if (activity) selectSport(activity.type);
+  if (activity) {
+    selectSport(activity.type);
+    currentPostId = activity.post_id || null;
+
+    // Affiche la photo existante si présente
+    if (activity.photo_url) {
+      photoPreview.src = activity.photo_url;
+      photoCurrent.classList.remove('hidden');
+      photoLabel.textContent = 'Remplacer la photo';
+    }
+  }
 
   modal.classList.remove('hidden');
   document.getElementById('f-date').focus();
@@ -239,6 +347,7 @@ function closeModal() {
   modal.classList.add('hidden');
   editingId = null;
   selectedType = null;
+  resetPhotoField();
 }
 
 document.getElementById('modal-close').addEventListener('click', closeModal);
@@ -323,7 +432,20 @@ saveBtn.addEventListener('click', async () => {
   saveBtn.classList.remove('loading');
 
   if (res.ok) {
-    const activity = await res.json();
+    let activity = await res.json();
+
+    // Gestion photo après la sauvegarde de l'activité
+    const postId = isEdit ? currentPostId : activity.post_id;
+    if (postId) {
+      if (pendingRemovePhoto) {
+        await deletePhoto(postId);
+        activity = { ...activity, photo_url: null };
+      } else if (photoInput.files[0]) {
+        const url = await uploadPhoto(postId);
+        if (url) activity = { ...activity, photo_url: url };
+      }
+    }
+
     if (isEdit) {
       // Replace card in list
       const old = container.querySelector(`[data-activity-id="${editingId}"]`);

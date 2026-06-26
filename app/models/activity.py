@@ -47,5 +47,8 @@ class Activity(BaseModel):
             "date":         self.date.isoformat(),
             "notes":        self.notes,
             "extra_data":   self.extra_data,
+            # Inclut les données du post de feed associé pour que le frontend gère les photos
+            "post_id":      self.feed_post.id       if self.feed_post else None,
+            "photo_url":    self.feed_post.photo_url if self.feed_post else None,
         })
         return base

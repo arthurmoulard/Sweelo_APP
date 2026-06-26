@@ -1,6 +1,14 @@
-﻿from flask_restx import Namespace, Resource, fields
+﻿import os
+import uuid
+from flask import request as flask_request
+from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import facade
+
+# Dossier de stockage local des photos (servi par le frontend HTTP server)
+UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
+FRONTEND_URL = 'http://localhost:8080'
+ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
 
 ns = Namespace("feed", description="Feed social et interactions")
 
@@ -114,6 +122,74 @@ class ReportPost(Resource):
             reason=(ns.payload or {}).get("reason", ""),
         )
         return {"message": "Report submitted"}, 200
+
+
+@ns.route("/<string:post_id>/photo")
+class PostPhoto(Resource):
+
+    @jwt_required()
+    @ns.response(200, "Photo uploaded")
+    @ns.response(400, "Invalid file")
+    @ns.response(403, "Not your post")
+    @ns.response(404, "Post not found")
+    def post(self, post_id):
+        """Upload ou remplace la photo d'un post (multipart/form-data, champ 'photo')."""
+        user_id = get_jwt_identity()
+        post = facade.feed_repository.get_post(post_id)
+        if not post:
+            ns.abort(404, "Post not found")
+        if post.user_id != user_id:
+            ns.abort(403, "Not your post")
+
+        file = flask_request.files.get('photo')
+        if not file or not file.filename:
+            ns.abort(400, "No file provided")
+
+        ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+        if ext not in ALLOWED_EXT:
+            ns.abort(400, f"File type not allowed. Use: {', '.join(ALLOWED_EXT)}")
+
+        # Supprime l'ancienne photo si elle existe
+        if post.photo_url:
+            old_name = post.photo_url.split('/uploads/')[-1]
+            old_path = os.path.join(UPLOAD_DIR, old_name)
+            if os.path.exists(old_path):
+                os.remove(old_path)
+
+        # Sauvegarde la nouvelle photo avec un nom unique
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        file.save(os.path.join(UPLOAD_DIR, filename))
+
+        post.photo_url = f"{FRONTEND_URL}/uploads/{filename}"
+        post.photo_public_id = filename
+        facade.feed_repository.save(post)
+
+        return {"photo_url": post.photo_url}, 200
+
+    @jwt_required()
+    @ns.response(204, "Photo deleted")
+    @ns.response(403, "Not your post")
+    @ns.response(404, "Post not found")
+    def delete(self, post_id):
+        """Supprime la photo d'un post."""
+        user_id = get_jwt_identity()
+        post = facade.feed_repository.get_post(post_id)
+        if not post:
+            ns.abort(404, "Post not found")
+        if post.user_id != user_id:
+            ns.abort(403, "Not your post")
+
+        if post.photo_url:
+            filename = post.photo_url.split('/uploads/')[-1]
+            path = os.path.join(UPLOAD_DIR, filename)
+            if os.path.exists(path):
+                os.remove(path)
+            post.photo_url       = None
+            post.photo_public_id = None
+            facade.feed_repository.save(post)
+
+        return "", 204
 
 
 @ns.route("/comments/<string:comment_id>/report")
