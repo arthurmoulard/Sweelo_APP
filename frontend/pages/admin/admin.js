@@ -11,7 +11,7 @@
      POST   /admin/users/:id/unban
    ============================================================ */
 
-const API_BASE   = 'http://localhost:5000/api/v1';
+const API_BASE   = '/api/v1';
 const TOKEN_KEY  = 'sw_access_token';
 
 /* ============================================================
@@ -533,9 +533,249 @@ document.getElementById('user-search').addEventListener('input', (e) => {
    7. ONGLETS
    ============================================================ */
 
+/* ============================================================
+   7b. PANEL UTILISATEURS & ACTIVITÉS
+   ============================================================ */
+
+const ACTIVITY_LABELS_OV = {
+  run: 'Course', bike: 'Vélo', swim: 'Natation', walk: 'Marche',
+  trail: 'Trail', triathlon: 'Triathlon', hyrox: 'Hyrox',
+  muscu: 'Musculation', basket: 'Basketball', foot: 'Football',
+  hand: 'Handball', volley: 'Volleyball', combat: 'Combat',
+};
+
+let _overviewUsers   = [];
+let _overviewTimer   = null;
+let _expandedUsers   = new Set();
+
+async function loadOverview() {
+  show('overview-loading');
+  hide('overview-list');
+  hide('overview-empty');
+
+  try {
+    const res = await apiFetch('/admin/users');
+    if (!res?.ok) throw new Error();
+    const data = await res.json();
+    _overviewUsers = data.data ?? data.items ?? data;
+    hide('overview-loading');
+    renderOverview(_overviewUsers);
+  } catch {
+    hide('overview-loading');
+    showAlert('error', 'Impossible de charger les utilisateurs.');
+  }
+}
+
+function renderOverview(users) {
+  const listEl = document.getElementById('overview-list');
+  listEl.innerHTML = '';
+
+  if (!users.length) { hide('overview-list'); show('overview-empty'); return; }
+  hide('overview-empty'); show('overview-list');
+
+  users.forEach(user => {
+    const card = document.createElement('div');
+    card.className = 'ov-card';
+    card.id = `ov-user-${user.id}`;
+
+    const isExpanded = _expandedUsers.has(user.id);
+    const statusHtml = user.is_banned
+      ? `<span class="status-banned">🚫 Banni</span>`
+      : `<span class="status-active">✅ Actif</span>`;
+    const banBtnHtml = user.is_admin ? '' : `
+      <button class="btn btn--sm ${user.is_banned ? 'btn--secondary' : 'btn--danger'}"
+              data-action="${user.is_banned ? 'ov-unban' : 'ov-ban'}"
+              data-user-id="${user.id}" data-username="${escapeHtmlOv(user.username)}">
+        ${user.is_banned ? 'Débannir' : 'Bannir'}
+      </button>`;
+
+    card.innerHTML = `
+      <div class="ov-header">
+        <div class="user-cell">
+          <div class="user-avatar">${getInitial(user.username)}</div>
+          <div>
+            <span class="user-username">${escapeHtmlOv(user.username)}</span>
+            <span class="ov-email">${escapeHtmlOv(user.email)}</span>
+          </div>
+        </div>
+        <div class="ov-actions">
+          ${statusHtml}
+          ${banBtnHtml}
+          <button class="btn btn--sm btn--ghost ov-expand-btn"
+                  data-user-id="${user.id}">
+            ${isExpanded ? '▲ Masquer' : '▼ Activités'}
+          </button>
+        </div>
+      </div>
+      <div class="ov-activities ${isExpanded ? '' : 'hidden'}" id="ov-acts-${user.id}">
+        <div class="ov-acts-loader">
+          <div class="spinner spinner--sm"></div>
+          <span class="text-muted" style="font-size:.8rem">Chargement…</span>
+        </div>
+      </div>`;
+
+    listEl.appendChild(card);
+
+    if (isExpanded) fetchUserActivities(user.id);
+  });
+
+  listEl.onclick = handleOverviewAction;
+}
+
+function escapeHtmlOv(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
+}
+
+async function handleOverviewAction(e) {
+  const btn = e.target.closest('[data-action], .ov-expand-btn');
+  if (!btn) return;
+
+  const action   = btn.dataset.action;
+  const userId   = btn.dataset.userId;
+  const username = btn.dataset.username;
+
+  if (btn.classList.contains('ov-expand-btn')) {
+    toggleExpand(userId);
+    return;
+  }
+
+  if (action === 'ov-ban') {
+    openModal('Bannir l\'utilisateur',
+      `Tu vas bannir @${username}. Il ne pourra plus se connecter.`,
+      () => toggleBanOv(userId, true, username));
+  }
+  if (action === 'ov-unban') {
+    openModal('Débannir l\'utilisateur',
+      `Tu vas débannir @${username}. Il pourra à nouveau accéder à l'application.`,
+      () => toggleBanOv(userId, false, username));
+  }
+  if (action === 'delete-activity') {
+    const actId   = btn.dataset.activityId;
+    const actType = btn.dataset.activityType;
+    openModal('Supprimer l\'activité',
+      `Supprimer définitivement cette activité "${ACTIVITY_LABELS_OV[actType] || actType}" de @${username} ?`,
+      () => deleteActivityOv(actId, userId));
+  }
+}
+
+async function toggleBanOv(userId, ban, username) {
+  const route = ban
+    ? `/admin/users/${userId}/ban`
+    : `/admin/users/${userId}/unban`;
+  const res = await apiFetch(route, { method: 'POST' });
+  if (!res?.ok) { showAlert('error', 'Erreur.'); return; }
+  showAlert('success', ban ? `@${username} banni.` : `@${username} débanni.`);
+  await loadOverview();
+  await loadStats();
+}
+
+async function toggleExpand(userId) {
+  const actsEl   = document.getElementById(`ov-acts-${userId}`);
+  const expandBtn = document.querySelector(`#ov-user-${userId} .ov-expand-btn`);
+  if (!actsEl) return;
+
+  if (_expandedUsers.has(userId)) {
+    _expandedUsers.delete(userId);
+    actsEl.classList.add('hidden');
+    if (expandBtn) expandBtn.textContent = '▼ Activités';
+  } else {
+    _expandedUsers.add(userId);
+    actsEl.classList.remove('hidden');
+    if (expandBtn) expandBtn.textContent = '▲ Masquer';
+    fetchUserActivities(userId);
+  }
+}
+
+async function fetchUserActivities(userId) {
+  const actsEl = document.getElementById(`ov-acts-${userId}`);
+  if (!actsEl) return;
+
+  const res = await apiFetch(`/admin/users/${userId}/activities`);
+  if (!res?.ok) {
+    actsEl.innerHTML = '<p style="color:var(--error);font-size:.82rem;padding:8px">Impossible de charger les activités.</p>';
+    return;
+  }
+  const data = await res.json();
+  const items = data.items ?? data;
+
+  const username = document.querySelector(`#ov-user-${userId} .user-username`)?.textContent ?? '';
+
+  if (!items.length) {
+    actsEl.innerHTML = '<p style="color:var(--muted);font-size:.82rem;padding:8px 0">Aucune activité enregistrée.</p>';
+    return;
+  }
+
+  actsEl.innerHTML = `
+    <table class="acts-table">
+      <thead>
+        <tr>
+          <th>Sport</th>
+          <th>Date</th>
+          <th>Durée</th>
+          <th>Distance</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items.map(act => {
+          const h = Math.floor(act.duration_min / 60);
+          const m = act.duration_min % 60;
+          const dur = h > 0 ? `${h}h${m > 0 ? m + 'min' : ''}` : `${m} min`;
+          const dist = act.distance_km != null ? `${act.distance_km.toFixed(1)} km` : '—';
+          const notes = act.notes
+            ? `<span title="${escapeHtmlOv(act.notes)}">${escapeHtmlOv(act.notes.slice(0, 40))}${act.notes.length > 40 ? '…' : ''}</span>`
+            : '<span style="color:var(--muted)">—</span>';
+          return `
+            <tr>
+              <td><span class="act-badge act-badge--${escapeHtmlOv(act.type)}">${ACTIVITY_LABELS_OV[act.type] || act.type}</span></td>
+              <td style="white-space:nowrap">${formatDate(act.date)}</td>
+              <td style="white-space:nowrap">${dur}</td>
+              <td style="white-space:nowrap">${dist}</td>
+              <td class="notes-cell">${notes}</td>
+              <td>
+                <button class="btn btn--sm btn--danger"
+                        data-action="delete-activity"
+                        data-activity-id="${act.id}"
+                        data-activity-type="${escapeHtmlOv(act.type)}"
+                        data-user-id="${userId}"
+                        data-username="${escapeHtmlOv(username)}">
+                  Supprimer
+                </button>
+              </td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function deleteActivityOv(activityId, userId) {
+  const res = await apiFetch(`/admin/activities/${activityId}`, { method: 'DELETE' });
+  if (!res?.ok) { showAlert('error', 'Erreur lors de la suppression.'); return; }
+  showAlert('success', 'Activité supprimée.');
+  fetchUserActivities(userId);
+  loadStats();
+}
+
+/* ── Filtrage overview ── */
+document.getElementById('overview-search').addEventListener('input', e => {
+  clearTimeout(_overviewTimer);
+  _overviewTimer = setTimeout(() => {
+    const q = e.target.value.trim().toLowerCase();
+    const filtered = q
+      ? _overviewUsers.filter(u =>
+          u.username.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+      : _overviewUsers;
+    renderOverview(filtered);
+  }, 250);
+});
+
 const TABS = [
-  { tabId: 'tab-reports', panelId: 'panel-reports', loader: loadReports },
-  { tabId: 'tab-users',   panelId: 'panel-users',   loader: loadUsers   },
+  { tabId: 'tab-reports',  panelId: 'panel-reports',  loader: loadReports  },
+  { tabId: 'tab-users',    panelId: 'panel-users',     loader: loadUsers    },
+  { tabId: 'tab-overview', panelId: 'panel-overview',  loader: loadOverview },
 ];
 
 function switchTab(activeTabId) {
@@ -554,8 +794,9 @@ function switchTab(activeTabId) {
   activeTab?.loader();
 }
 
-document.getElementById('tab-reports').addEventListener('click', () => switchTab('tab-reports'));
-document.getElementById('tab-users').addEventListener('click',   () => switchTab('tab-users'));
+document.getElementById('tab-reports').addEventListener('click',  () => switchTab('tab-reports'));
+document.getElementById('tab-users').addEventListener('click',    () => switchTab('tab-users'));
+document.getElementById('tab-overview').addEventListener('click', () => switchTab('tab-overview'));
 
 /* ============================================================
    8. DÉCONNEXION

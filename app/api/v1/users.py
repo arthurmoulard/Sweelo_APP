@@ -6,7 +6,7 @@ from flask import request, request as flask_request
 from app.extensions import facade
 
 UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
-FRONTEND_URL = 'http://localhost:8080'
+FRONTEND_URL = 'http://localhost:5000'
 ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
 
 ns = Namespace("users", description="Profil et amis")

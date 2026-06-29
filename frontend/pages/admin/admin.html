@@ -73,6 +73,10 @@
               aria-selected="false" aria-controls="panel-users">
         Utilisateurs
       </button>
+      <button class="tab" id="tab-overview" role="tab"
+              aria-selected="false" aria-controls="panel-overview">
+        Utilisateurs &amp; Activités
+      </button>
     </div>
 
     <!-- ══ PANEL SIGNALEMENTS ══ -->
@@ -160,6 +164,32 @@
     </section>
 
   </main>
+
+    <!-- ══ PANEL UTILISATEURS & ACTIVITÉS ══ -->
+    <section class="tab-panel hidden" id="panel-overview" role="tabpanel">
+
+      <div class="search-bar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" class="form-input search-input" id="overview-search"
+               placeholder="Filtrer par nom ou e-mail…" />
+      </div>
+
+      <div class="loading-state" id="overview-loading">
+        <div class="spinner spinner--lg"></div>
+        <span class="text-muted">Chargement…</span>
+      </div>
+
+      <div class="empty-state hidden" id="overview-empty">
+        <div class="empty-state__icon">👤</div>
+        <p class="empty-state__title">AUCUN RÉSULTAT</p>
+      </div>
+
+      <div class="hidden" id="overview-list"></div>
+
+    </section>
 
   <!-- ══ MODALE CONFIRMATION ══ -->
   <div class="modal-overlay hidden" id="modal-overlay" role="dialog"

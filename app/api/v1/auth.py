@@ -1,7 +1,7 @@
 ﻿from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import (
     create_access_token, create_refresh_token,
-    jwt_required, get_jwt_identity, get_jwt,
+    jwt_required, get_jwt_identity, get_jwt, decode_token,
 )
 from app.extensions import facade, db
 
@@ -35,7 +35,11 @@ class Register(Resource):
                 username=data["username"].strip(),
                 password=data["password"],
             )
-            return user.to_dict(), 201
+            claims = {"is_admin": user.is_admin}
+            result = user.to_dict()
+            result["access_token"]  = create_access_token(identity=user.id, additional_claims=claims)
+            result["refresh_token"] = create_refresh_token(identity=user.id, additional_claims=claims)
+            return result, 201
         except ValueError as e:
             ns.abort(409, str(e))
 

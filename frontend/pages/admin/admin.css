@@ -603,6 +603,127 @@ body {
 }
 
 /* ============================================================
+   PANEL UTILISATEURS & ACTIVITÉS
+   ============================================================ */
+
+/* Carte utilisateur expandable */
+.ov-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.ov-card:hover { border-color: rgba(255,107,53,.25); }
+
+.ov-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ov-header .user-cell { gap: 12px; }
+
+.ov-email {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.ov-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* Zone activités (expandable) */
+.ov-activities {
+  border-top: 1px solid var(--border);
+  padding: 16px 20px;
+  background: var(--surface2);
+}
+
+.ov-acts-loader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tableau des activités inline */
+.acts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.acts-table thead {
+  border-bottom: 1px solid var(--border);
+}
+
+.acts-table th {
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.acts-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  color: var(--text);
+  vertical-align: middle;
+}
+.acts-table tbody tr:last-child td { border-bottom: none; }
+.acts-table tbody tr:hover { background: rgba(255,255,255,.025); }
+
+.notes-cell {
+  max-width: 200px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* Badges sport dans la table */
+.act-badge {
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(78,205,196,.12);
+  color: var(--accent);
+  border: 1px solid rgba(78,205,196,.2);
+  white-space: nowrap;
+}
+.act-badge--run       { background: rgba(255,107,53,.12); color: #ff6b35; border-color: rgba(255,107,53,.2); }
+.act-badge--bike      { background: rgba(78,205,196,.12); color: #4ecdc4; border-color: rgba(78,205,196,.2); }
+.act-badge--swim      { background: rgba(74,144,226,.12); color: #4a90e2; border-color: rgba(74,144,226,.2); }
+.act-badge--walk      { background: rgba(168,224,99,.12); color: #a8e063; border-color: rgba(168,224,99,.2); }
+.act-badge--trail     { background: rgba(139,90,43,.18);  color: #c8924a; border-color: rgba(139,90,43,.3); }
+.act-badge--muscu     { background: rgba(155,89,182,.12); color: #9b59b6; border-color: rgba(155,89,182,.2); }
+.act-badge--foot      { background: rgba(46,204,113,.12); color: #2ecc71; border-color: rgba(46,204,113,.2); }
+.act-badge--basket    { background: rgba(230,126,34,.12); color: #e67e22; border-color: rgba(230,126,34,.2); }
+.act-badge--combat    { background: rgba(231,76,60,.12);  color: #e74c3c; border-color: rgba(231,76,60,.2); }
+
+.spinner--sm {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 640px) {

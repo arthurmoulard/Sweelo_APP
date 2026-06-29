@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api/v1';
+const API_BASE = '/api/v1';
 
 const form       = document.getElementById('register-form');
 const emailInput = document.getElementById('email');
@@ -137,10 +137,12 @@ form.addEventListener('submit', async (e) => {
     const data = await res.json();
 
     if (res.status === 201) {
+      localStorage.setItem('sw_access_token',  data.access_token);
+      localStorage.setItem('sw_refresh_token', data.refresh_token);
       showAlert('success', `Compte créé ! Bienvenue, ${data.username} 🎉 Redirection…`);
       form.reset();
       document.getElementById('strength-fill').style.width = '0%';
-      setTimeout(() => { window.location.href = '../login/login.html'; }, 2200);
+      setTimeout(() => { window.location.href = '../feed/feed.html'; }, 1500);
     } else if (res.status === 409) {
       showAlert('error', data.message || 'Cet e-mail ou ce pseudo est déjà utilisé.');
     } else if (res.status === 400) {

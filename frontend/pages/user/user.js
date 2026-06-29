@@ -1,5 +1,5 @@
 // ── Config ────────────────────────────────────────────────────────────────────
-const API_BASE = 'http://localhost:5000/api/v1';
+const API_BASE = '/api/v1';
 
 // Redirige si pas connecté
 if (!localStorage.getItem('sw_access_token')) {

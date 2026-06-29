@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api/v1';
+const API_BASE = '/api/v1';
 
 if (!localStorage.getItem('sw_access_token')) {
   window.location.replace('../../index.html');

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sweelo — Recherche</title>
+  <link rel="stylesheet" href="search.css" />
+</head>
+<body>
+
+  <nav class="topnav">
+    <a href="../../index.html" class="nav-brand">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.5 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM9.9 19.1l1-4.4 2.1 2V22h2v-5.7l-2.1-2 .6-3c1.3 1.5 3.3 2.7 5.5 2.7v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 10.3V15h2v-3.4l2.1-.8-1.8 8.3H6l-1 2h4.1l.8-2Z"/>
+        </svg>
+      </div>
+      <span>Swee<em>lo</em></span>
+    </a>
+
+    <div class="nav-links">
+      <a href="../feed/feed.html">Feed</a>
+      <a href="../activities/activities.html">Activités</a>
+      <a href="search.html" class="active" title="Rechercher">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </a>
+      <a href="../profile/profile.html">Profil</a>
+    </div>
+
+    <button id="logout-btn" class="btn-logout">Déconnexion</button>
+  </nav>
+
+  <main>
+
+    <!-- Tabs -->
+    <div class="search-tabs">
+      <button class="tab-btn active" data-tab="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Utilisateurs
+      </button>
+      <button class="tab-btn" data-tab="activities">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13.5 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM9.9 19.1l1-4.4 2.1 2V22h2v-5.7l-2.1-2 .6-3c1.3 1.5 3.3 2.7 5.5 2.7v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 10.3V15h2v-3.4l2.1-.8-1.8 8.3H6l-1 2h4.1l.8-2Z"/>
+        </svg>
+        Activités
+      </button>
+    </div>
+
+    <!-- ── Onglet Utilisateurs ── -->
+    <div id="tab-users" class="tab-panel">
+
+      <section class="section-card">
+        <h2>Trouver des sportifs</h2>
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="user-search-input" placeholder="Rechercher par pseudo (2 caractères min.)…" autocomplete="off" maxlength="50" />
+        </div>
+        <div id="user-search-loader" class="loader hidden">
+          <span class="spinner-sm"></span><span class="loader-text">Recherche…</span>
+        </div>
+        <div id="user-search-empty" class="placeholder hidden">Aucun utilisateur trouvé.</div>
+        <div id="user-search-results" class="user-grid hidden"></div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-head">
+          <h2>Mes amis</h2>
+          <span id="friends-count" class="count-badge hidden"></span>
+        </div>
+        <div id="friends-loader" class="loader">
+          <span class="spinner-sm"></span><span class="loader-text">Chargement…</span>
+        </div>
+        <div id="friends-empty" class="placeholder hidden">Tu n'as pas encore d'amis. Recherche des sportifs ci-dessus !</div>
+        <div id="friends-list" class="user-grid hidden"></div>
+      </section>
+
+    </div>
+
+    <!-- ── Onglet Activités ── -->
+    <div id="tab-activities" class="tab-panel hidden">
+
+      <section class="section-card">
+        <h2>Filtrer par sport</h2>
+        <div class="sport-chips" id="sport-chips"></div>
+      </section>
+
+      <div id="activity-loader" class="loader hidden">
+        <span class="spinner-sm"></span><span class="loader-text">Chargement…</span>
+      </div>
+      <div id="activity-empty" class="placeholder hidden">Aucune activité trouvée pour ce sport.</div>
+      <div id="activity-results"></div>
+      <button id="activity-load-more" class="btn-load-more hidden">Charger plus</button>
+
+    </div>
+
+  </main>
+
+  <script src="search.js"></script>
+</body>
+</html>

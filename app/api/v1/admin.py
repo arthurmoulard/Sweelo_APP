@@ -126,6 +126,58 @@ class DeletePost(Resource):
             ns.abort(404, str(e))
 
 
+@ns.route("/users/<string:user_id>/activities")
+class UserActivities(Resource):
+
+    @jwt_required()
+    @ns.response(200, "User activities")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(403, "Admin access required")
+    @ns.response(404, "User not found")
+    def get(self, user_id):
+        """Liste toutes les activités d'un utilisateur (admin)."""
+        from flask import request
+        from app.models.user import User
+        from app.models.activity import Activity
+        admin_required()
+        user = User.query.get(user_id)
+        if not user:
+            ns.abort(404, "User not found")
+        page     = int(request.args.get("page", 1))
+        per_page = 50
+        p = (Activity.query
+             .filter_by(user_id=user_id)
+             .order_by(Activity.date.desc())
+             .paginate(page=page, per_page=per_page, error_out=False))
+        return {
+            "items":    [a.to_dict() for a in p.items],
+            "page":     p.page,
+            "has_next": p.has_next,
+            "total":    p.total,
+        }, 200
+
+
+@ns.route("/activities/<string:activity_id>")
+class AdminDeleteActivity(Resource):
+
+    @jwt_required()
+    @ns.response(204, "Activity deleted")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(403, "Admin access required")
+    @ns.response(404, "Activity not found")
+    def delete(self, activity_id):
+        """Supprime une activité (et son post de feed associé)."""
+        from app.models.activity import Activity
+        from app.extensions import db
+        admin_required()
+        activity = Activity.query.get(activity_id)
+        if not activity:
+            ns.abort(404, "Activity not found")
+        db.session.delete(activity)
+        db.session.commit()
+        return "", 204
+
+
 @ns.route("/comments/<string:comment_id>")
 class DeleteComment(Resource):
 

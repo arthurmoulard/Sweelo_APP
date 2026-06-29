@@ -7,7 +7,7 @@ from app.extensions import facade
 
 # Dossier de stockage local des photos (servi par le frontend HTTP server)
 UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
-FRONTEND_URL = 'http://localhost:8080'
+FRONTEND_URL = 'http://localhost:5000'
 ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
 
 ns = Namespace("feed", description="Feed social et interactions")
@@ -190,6 +190,43 @@ class PostPhoto(Resource):
             facade.feed_repository.save(post)
 
         return "", 204
+
+
+@ns.route("/search")
+class FeedSearch(Resource):
+
+    @jwt_required()
+    @ns.response(200, "Search results by activity type")
+    @ns.response(400, "Invalid or missing type")
+    @ns.response(401, "Missing or invalid token")
+    def get(self):
+        """Recherche les posts du feed par type d'activité. Param: ?type=run&page=1"""
+        from flask import request
+        from app.models.feed_post import FeedPost
+        from app.models.activity import Activity
+        user_id = get_jwt_identity()
+
+        activity_type = request.args.get("type", "").strip()
+        if activity_type not in Activity.ACTIVITY_TYPES:
+            ns.abort(400, f"type invalide. Valeurs acceptées : {', '.join(Activity.ACTIVITY_TYPES)}")
+
+        page     = max(1, int(request.args.get("page", 1)))
+        per_page = 12
+
+        paginated = (
+            FeedPost.query
+            .join(Activity, FeedPost.activity_id == Activity.id)
+            .filter(Activity.type == activity_type)
+            .order_by(FeedPost.created_at.desc())
+            .paginate(page=page, per_page=per_page, error_out=False)
+        )
+
+        return {
+            "posts":    [p.to_dict(current_user_id=user_id) for p in paginated.items],
+            "page":     page,
+            "has_next": paginated.has_next,
+            "total":    paginated.total,
+        }, 200
 
 
 @ns.route("/comments/<string:comment_id>/report")

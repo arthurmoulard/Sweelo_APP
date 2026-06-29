@@ -1,4 +1,5 @@
-from flask import Flask
+import os
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from app.config import config
 from app.extensions import db, jwt, init_facade
@@ -21,7 +22,7 @@ def create_app(config_name: str = "default") -> Flask:
     app.config.from_object(config[config_name])
 
     # ── 2. Initialisation des extensions ──────────────────────────────────────
-    CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
+    CORS(app, origins=["http://localhost:8080", "http://localhost:5000"], supports_credentials=True)
     db.init_app(app)
     jwt.init_app(app)
 
@@ -63,6 +64,17 @@ def create_app(config_name: str = "default") -> Flask:
             db.session.commit()
         except Exception:
             db.session.rollback()
+
+    # ── 6. Service des fichiers statiques du frontend ─────────────────────────
+    _frontend = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+
+    @app.route('/', defaults={'path': 'index.html'})
+    @app.route('/<path:path>')
+    def serve_frontend(path):
+        target = os.path.join(_frontend, path)
+        if os.path.isfile(target):
+            return send_from_directory(_frontend, path)
+        return send_from_directory(_frontend, 'index.html')
 
     return app
 
