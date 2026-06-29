@@ -74,7 +74,7 @@ label {
 
 .input-wrap { position: relative; display: flex; align-items: center; }
 
-.input-wrap svg {
+.input-wrap > svg {
   position: absolute; left: 14px;
   width: 18px; height: 18px;
   color: var(--muted); pointer-events: none;
@@ -87,7 +87,7 @@ input {
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
   color: var(--text); font-size: 0.95rem;
-  padding: 12px 14px 12px 44px;
+  padding: 12px 44px 12px 44px;
   outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
   -webkit-appearance: none; appearance: none;
