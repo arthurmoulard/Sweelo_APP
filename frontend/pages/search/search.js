@@ -1,3 +1,19 @@
+/**
+ * Recherche — deux onglets
+ *
+ * Onglet "Utilisateurs" : recherche live avec debounce 350 ms.
+ *   Utilise friendIds (Set) pour afficher le bon bouton sans appel supplémentaire.
+ *
+ * Onglet "Activités" : sélection d'un sport → charge les posts du feed filtrés par type.
+ *
+ * Routes API :
+ *   GET    /users/me/friends             — charge les IDs amis au démarrage
+ *   GET    /users/search?q=…            — recherche utilisateurs (min 2 chars)
+ *   POST   /users/:id/friend            — ajouter un ami
+ *   DELETE /users/:id/friend            — retirer un ami
+ *   GET    /feed/search?type=…&page=N   — posts filtrés par type de sport
+ */
+
 const API_BASE = '/api/v1';
 
 if (!localStorage.getItem('sw_access_token')) {

@@ -1,3 +1,17 @@
+/**
+ * Profil public d'un utilisateur
+ *
+ * L'ID cible est passé via ?id=<uuid> dans l'URL.
+ * Charge en parallèle le profil cible et la liste d'amis du connecté
+ * pour afficher le bon bouton (Ajouter / Retirer) sans second appel.
+ *
+ * Routes API :
+ *   GET    /users/:id           — profil public
+ *   GET    /users/me/friends    — amis du connecté (état du bouton)
+ *   POST   /users/:id/friend    — ajouter
+ *   DELETE /users/:id/friend    — retirer
+ */
+
 // ── Config ────────────────────────────────────────────────────────────────────
 const API_BASE = '/api/v1';
 

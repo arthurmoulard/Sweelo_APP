@@ -1,3 +1,18 @@
+/**
+ * Profil — page personnelle de l'utilisateur connecté
+ *
+ * Affiche et permet d'éditer son profil (username, email, mot de passe).
+ * L'avatar se change au clic (upload multipart, sans passer par apiFetch
+ * car Content-Type est multipart/form-data et non JSON).
+ *
+ * Routes API :
+ *   GET  /users/me          — données du profil
+ *   PUT  /users/me          — modifier profil
+ *   GET  /users/me/stats    — km totaux, heures totales
+ *   GET  /users/me/friends  — liste des amis
+ *   POST /users/me/avatar   — upload avatar (multipart/form-data)
+ */
+
 // ── Config ────────────────────────────────────────────────────────────────────
 const API_BASE = '/api/v1';
 

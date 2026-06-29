@@ -1,3 +1,20 @@
+/**
+ * Amis — gestion des amis de l'utilisateur connecté
+ *
+ * Deux sections :
+ *   - "Mes amis" : liste avec bouton "Retirer"
+ *   - Recherche live : debounce 350 ms, bouton correct selon friendIds
+ *
+ * friendIds est un Set d'UUIDs rechargé à chaque mutation
+ * pour éviter un appel API supplémentaire lors du rendu des résultats.
+ *
+ * Routes API :
+ *   GET    /users/me/friends    — liste des amis
+ *   GET    /users/search?q=…   — recherche (min 2 chars)
+ *   POST   /users/:id/friend   — ajouter
+ *   DELETE /users/:id/friend   — retirer
+ */
+
 // ── Config ────────────────────────────────────────────────────────────────────
 const API_BASE = '/api/v1';
 

@@ -1,3 +1,21 @@
+/**
+ * Activités — CRUD des activités personnelles
+ *
+ * Liste les activités de l'utilisateur connecté avec pagination.
+ * La création/modification passe par un modal.
+ * L'upload photo se fait en deux temps :
+ *   1. POST /activities/ → crée l'activité et son feed_post (reçoit post_id)
+ *   2. POST /feed/:post_id/photo → upload multipart (séparé car pas JSON)
+ *
+ * Routes API :
+ *   GET    /activities/?page=N  — liste paginée
+ *   POST   /activities/         — créer
+ *   PUT    /activities/:id      — modifier
+ *   DELETE /activities/:id      — supprimer
+ *   POST   /feed/:id/photo      — upload photo (multipart/form-data)
+ *   DELETE /feed/:id/photo      — supprimer photo
+ */
+
 const API_BASE = '/api/v1';
 
 if (!localStorage.getItem('sw_access_token')) {

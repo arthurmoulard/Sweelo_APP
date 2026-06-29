@@ -1,3 +1,15 @@
+/**
+ * Page de connexion
+ *
+ * Validation côté client (format email, champ non vide).
+ * Si l'utilisateur est déjà connecté (token présent), redirige vers index.html.
+ * Après succès (200), les tokens sont stockés dans localStorage :
+ *   sw_access_token  — JWT court (utilisé dans Authorization: Bearer)
+ *   sw_refresh_token — JWT long (non utilisé côté client pour l'instant)
+ *
+ * Route API : POST /auth/login
+ */
+
 const API_BASE = '/api/v1';
 
 const form       = document.getElementById('login-form');

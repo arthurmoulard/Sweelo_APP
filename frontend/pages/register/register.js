@@ -1,3 +1,16 @@
+/**
+ * Page d'inscription
+ *
+ * Validation en temps réel : email, username (3–30 chars, alphanumeric + _-),
+ * force du mot de passe (score 1–5), confirmation.
+ *
+ * Le backend renvoie les tokens directement dans la réponse 201,
+ * ce qui évite un second appel de login post-inscription.
+ * Redirige vers feed.html après 1,5 s.
+ *
+ * Route API : POST /auth/register
+ */
+
 const API_BASE = '/api/v1';
 
 const form       = document.getElementById('register-form');

@@ -1,3 +1,20 @@
+/**
+ * Feed — fil d'actualité
+ *
+ * Affiche les posts des amis paginés (12 par page).
+ * Gère les likes (mise à jour optimiste) et les commentaires (chargement à la demande).
+ *
+ * Routes API :
+ *   GET    /feed/?page=N          — posts paginés
+ *   POST   /feed/:id/like         — toggle like
+ *   GET    /feed/:id/comments     — commentaires d'un post
+ *   POST   /feed/:id/comments     — ajouter un commentaire
+ *   DELETE /feed/comments/:id     — supprimer un commentaire
+ *
+ * currentUserId est décodé depuis le JWT (claim "sub") pour masquer
+ * le formulaire de commentaire sur ses propres posts.
+ */
+
 // ── Config ────────────────────────────────────────────────────────────────────
 const API_BASE = '/api/v1';
 
@@ -109,8 +126,6 @@ function renderPost(post) {
     ? `<img class="post-photo" src="${escapeHtml(post.photo_url)}" alt="Photo de l'activité" loading="lazy" />`
     : '';
 
-  const heartFill = post.user_has_liked ? 'currentColor' : 'none';
-
   const article = document.createElement('article');
   article.className = 'post-card';
   article.dataset.postId = post.id;
@@ -137,9 +152,7 @@ function renderPost(post) {
 
     <div class="post-actions">
       <button class="btn-action btn-like ${post.user_has_liked ? 'liked' : ''}" data-post-id="${post.id}">
-        <svg viewBox="0 0 24 24" fill="${heartFill}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-        </svg>
+        <span class="like-icon">🏋️</span>
         <span class="likes-count">${post.likes_count}</span>
       </button>
 
@@ -212,15 +225,13 @@ function bindPostEvents(article, postId) {
 // ── Like ──────────────────────────────────────────────────────────────────────
 
 async function toggleLike(postId) {
-  const card      = feedContainer.querySelector(`[data-post-id="${postId}"]`);
-  const btn       = card.querySelector('.btn-like');
-  const countEl   = btn.querySelector('.likes-count');
-  const svg       = btn.querySelector('svg');
-  const wasLiked  = btn.classList.contains('liked');
+  const card     = feedContainer.querySelector(`[data-post-id="${postId}"]`);
+  const btn      = card.querySelector('.btn-like');
+  const countEl  = btn.querySelector('.likes-count');
+  const wasLiked = btn.classList.contains('liked');
 
-  // Optimistic update
+  // Optimistic update — appliqué immédiatement, annulé si l'API échoue
   btn.classList.toggle('liked', !wasLiked);
-  svg.setAttribute('fill', wasLiked ? 'none' : 'currentColor');
   countEl.textContent = parseInt(countEl.textContent) + (wasLiked ? -1 : 1);
 
   const res = await apiFetch(`/feed/${postId}/like`, { method: 'POST' });
@@ -228,11 +239,9 @@ async function toggleLike(postId) {
     const data = await res.json();
     countEl.textContent = data.likes_count;
     btn.classList.toggle('liked', data.liked);
-    svg.setAttribute('fill', data.liked ? 'currentColor' : 'none');
   } else {
     // Revert on error
     btn.classList.toggle('liked', wasLiked);
-    svg.setAttribute('fill', wasLiked ? 'currentColor' : 'none');
     countEl.textContent = parseInt(countEl.textContent) + (wasLiked ? 1 : -1);
   }
 }
