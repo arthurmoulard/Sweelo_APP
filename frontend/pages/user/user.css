@@ -68,7 +68,7 @@ body {
 .nav-icon svg { width: 18px; height: 18px; fill: #fff; }
 .nav-brand em { color: var(--primary); font-style: normal; }
 .nav-logo { height: 36px; width: 36px; border-radius: 8px; }
-.nav-item-icon { height: 20px; width: 20px; border-radius: 6px; vertical-align: middle; margin-right: 5px; }
+.nav-item-icon { height: 22px; width: 22px; border-radius: 6px; vertical-align: middle; }
 
 .nav-links { display: flex; gap: 4px; }
 
@@ -250,6 +250,186 @@ main {
 }
 
 .hidden { display: none !important; }
+
+/* ── Section activités ───────────────────────────────────────────────────── */
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.posts-loader {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.posts-loader.hidden { display: none; }
+
+.posts-empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.875rem;
+  padding: 1.5rem;
+}
+
+.spinner-lg {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-load-more {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius);
+  padding: 0.6rem 1.5rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  display: block;
+  margin: 8px auto 0;
+}
+.btn-load-more:hover { border-color: var(--primary); }
+.btn-load-more.hidden { display: none !important; }
+
+/* ── Post cards ──────────────────────────────────────────────────────────── */
+
+.post-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 0.75rem;
+}
+
+.post-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.post-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+.post-meta { flex: 1; min-width: 0; }
+
+.post-author {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.post-time { font-size: 0.78rem; color: var(--muted); }
+
+.post-activity {
+  padding: 0 1.25rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.activity-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.activity-badge.run, .activity-badge.walk, .activity-badge.trail,
+.activity-badge.triathlon, .activity-badge.hyrox {
+  background: rgba(255,107,53,.15); color: var(--primary);
+}
+.activity-badge.bike, .activity-badge.swim {
+  background: rgba(78,205,196,.15); color: var(--accent);
+}
+.activity-badge.muscu, .activity-badge.basket, .activity-badge.foot,
+.activity-badge.hand, .activity-badge.volley, .activity-badge.combat {
+  background: rgba(160,130,255,.15); color: #a882ff;
+}
+
+.activity-stats { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.stat-pill {
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: var(--surface2);
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+.post-notes {
+  padding: 0 1.25rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.post-photo {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
+}
+
+.post-actions {
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-family: inherit;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color var(--transition), background var(--transition);
+}
+.btn-action:hover { background: var(--surface2); color: var(--text); }
+
+.like-icon { font-size: 1.1rem; filter: grayscale(1) opacity(0.5); transition: filter .2s; }
+.btn-like.liked .like-icon { filter: none; }
+.btn-like:hover .like-icon { filter: grayscale(0.3) opacity(0.85); }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 

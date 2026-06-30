@@ -168,6 +168,43 @@ class UserProfile(Resource):
             ns.abort(404, str(e))
 
 
+@ns.route("/<string:user_id>/posts")
+class UserPosts(Resource):
+
+    @jwt_required()
+    @ns.response(200, "Feed posts of a user (friends only)")
+    @ns.response(401, "Missing or invalid token")
+    @ns.response(403, "Not friends with this user")
+    @ns.response(404, "User not found")
+    def get(self, user_id):
+        """Posts du feed d'un utilisateur, accessibles uniquement si amis."""
+        from app.models.feed_post import FeedPost
+        requester_id = get_jwt_identity()
+
+        target = facade.user_repository.get_by_id(user_id)
+        if not target:
+            ns.abort(404, "User not found")
+
+        requester = facade.user_repository.get_by_id(requester_id)
+        is_friend = requester.friends.filter_by(id=user_id).count() > 0
+        if not is_friend:
+            ns.abort(403, "Not friends with this user")
+
+        page = max(1, int(request.args.get("page", 1)))
+        paginated = (
+            FeedPost.query
+            .filter_by(user_id=user_id)
+            .order_by(FeedPost.created_at.desc())
+            .paginate(page=page, per_page=12, error_out=False)
+        )
+
+        return {
+            "posts":    [p.to_dict(current_user_id=requester_id) for p in paginated.items],
+            "page":     paginated.page,
+            "has_next": paginated.has_next,
+        }, 200
+
+
 @ns.route("/<string:friend_id>/friend")
 class Friend(Resource):
 

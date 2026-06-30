@@ -1,0 +1,219 @@
+/* ── Sidebar dépliant — partagée entre toutes les pages ─────────────────── */
+
+.sidenav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 62px;
+  background: rgba(13, 13, 26, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0 12px;
+  z-index: 200;
+  overflow: hidden;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidenav:hover {
+  width: 210px;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45);
+}
+
+body { padding-left: 62px; }
+
+/* ── Logo ───────────────────────────────────────────────────────────────── */
+
+.sidenav .nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 4px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidenav .nav-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.sidenav .nav-brand-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.1s ease, max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidenav:hover .nav-brand-name {
+  opacity: 1;
+  max-width: 160px;
+  transition-delay: 0.06s;
+}
+
+/* ── Liens ──────────────────────────────────────────────────────────────── */
+
+.sidenav .nav-links {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1;
+  padding: 0 8px;
+  gap: 2px;
+}
+
+.sidenav .nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color 0.18s, background 0.18s;
+}
+
+.sidenav .nav-links a svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
+.sidenav .nav-links a:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sidenav .nav-links a.active {
+  color: var(--primary);
+  background: rgba(255, 107, 53, 0.1);
+}
+
+/* ── Labels (masqués, 0 espace occupé quand cachés) ─────────────────────── */
+
+.sidenav .nav-label {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.1s ease, max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidenav:hover .nav-label {
+  opacity: 1;
+  max-width: 160px;
+  transition-delay: 0.06s;
+}
+
+/* ── Bouton déconnexion ─────────────────────────────────────────────────── */
+
+.sidenav .btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 0 8px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color 0.18s, background 0.18s;
+  text-align: left;
+}
+
+.sidenav .btn-logout svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.sidenav .btn-logout:hover {
+  color: var(--error);
+  background: rgba(255, 77, 106, 0.08);
+}
+
+.sidenav .btn-logout .nav-label {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.1s ease, max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidenav:hover .btn-logout .nav-label {
+  opacity: 1;
+  max-width: 160px;
+  transition-delay: 0.06s;
+}
+
+/* ── Mobile : barre en bas ──────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  body { padding-left: 0; padding-bottom: 60px; }
+
+  .sidenav {
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+    top: auto;
+    bottom: 0;
+    padding: 0 8px;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    align-items: center;
+    gap: 0;
+    transition: none;
+  }
+
+  .sidenav:hover { width: 100%; box-shadow: none; }
+  .sidenav .nav-brand { display: none; }
+
+  .sidenav .nav-links {
+    flex-direction: row;
+    flex: 1;
+    justify-content: space-around;
+    padding: 0;
+    gap: 0;
+  }
+
+  .sidenav .nav-links a {
+    flex-direction: column;
+    padding: 6px 10px;
+    gap: 3px;
+    font-size: 0.65rem;
+    border-radius: 8px;
+    justify-content: center;
+  }
+
+  .sidenav .nav-links a svg { width: 20px; height: 20px; }
+
+  .sidenav .nav-label,
+  .sidenav:hover .nav-label { opacity: 1; transition-delay: 0s; }
+
+  .sidenav .btn-logout { display: none; }
+}

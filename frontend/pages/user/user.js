@@ -4,10 +4,12 @@
  * L'ID cible est passé via ?id=<uuid> dans l'URL.
  * Charge en parallèle le profil cible et la liste d'amis du connecté
  * pour afficher le bon bouton (Ajouter / Retirer) sans second appel.
+ * Si les deux utilisateurs sont amis, les activités postées sont affichées.
  *
  * Routes API :
  *   GET    /users/:id           — profil public
  *   GET    /users/me/friends    — amis du connecté (état du bouton)
+ *   GET    /users/:id/posts     — posts du feed (amis seulement)
  *   POST   /users/:id/friend    — ajouter
  *   DELETE /users/:id/friend    — retirer
  */
@@ -47,6 +49,13 @@ async function apiFetch(path, options = {}) {
 
 // ── Utilitaires ───────────────────────────────────────────────────────────────
 
+const currentUserId = (() => {
+  try {
+    const token = localStorage.getItem('sw_access_token');
+    return JSON.parse(atob(token.split('.')[1])).sub;
+  } catch { return null; }
+})();
+
 function initials(name) {
   return name ? name.slice(0, 2).toUpperCase() : '?';
 }
@@ -57,6 +66,29 @@ function formatJoinDate(iso) {
     month: 'long', year: 'numeric',
   });
 }
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
+}
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const min  = Math.floor(diff / 60000);
+  if (min < 1)  return "à l'instant";
+  if (min < 60) return `il y a ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24)   return `il y a ${h}h`;
+  return `il y a ${Math.floor(h / 24)}j`;
+}
+
+const ACTIVITY_LABELS = {
+  run: 'Course', bike: 'Vélo', swim: 'Natation', walk: 'Marche',
+  trail: 'Trail', triathlon: 'Triathlon', hyrox: 'Hyrox',
+  muscu: 'Musculation', basket: 'Basketball', foot: 'Football',
+  hand: 'Handball', volley: 'Volleyball', combat: 'Combat',
+};
 
 // ── Chargement du profil public ───────────────────────────────────────────────
 
@@ -105,10 +137,130 @@ async function loadProfile() {
     friendBtn.textContent = 'Retirer des amis';
     friendBtn.className   = 'btn-friend remove';
     friendBtn.onclick     = handleRemoveFriend;
+    loadUserPosts(userId);
   } else {
     friendBtn.textContent = '+ Ajouter';
     friendBtn.className   = 'btn-friend add';
     friendBtn.onclick     = handleAddFriend;
+  }
+}
+
+// ── Posts de l'utilisateur (amis seulement) ──────────────────────────────────
+
+let postsPage = 1;
+let postsHasNext = false;
+let postsLoading = false;
+
+function renderActivityStats(activity) {
+  const parts = [];
+  if (activity.distance_km != null) {
+    parts.push(`<span class="stat-pill">${activity.distance_km.toFixed(1)} km</span>`);
+  }
+  if (activity.duration_min) {
+    const h = Math.floor(activity.duration_min / 60);
+    const m = activity.duration_min % 60;
+    parts.push(`<span class="stat-pill">${h > 0 ? `${h}h${m > 0 ? m + 'min' : ''}` : `${m} min`}</span>`);
+  }
+  return parts.join('');
+}
+
+function renderPost(post) {
+  const act        = post.activity || {};
+  const badgeLabel = ACTIVITY_LABELS[act.type] || act.type || '';
+  const notesHtml  = act.notes ? `<p class="post-notes">${escapeHtml(act.notes)}</p>` : '';
+  const photoHtml  = post.photo_url
+    ? `<img class="post-photo" src="${escapeHtml(post.photo_url)}" alt="Photo de l'activité" loading="lazy" />`
+    : '';
+  const avatarContent = post.author_avatar_url
+    ? `<img src="${escapeHtml(post.author_avatar_url)}" alt="${initials(post.username)}" />`
+    : initials(post.username);
+
+  const article = document.createElement('article');
+  article.className    = 'post-card';
+  article.dataset.postId = post.id;
+  article.innerHTML = `
+    <div class="post-header">
+      <div class="post-avatar">${avatarContent}</div>
+      <div class="post-meta">
+        <span class="post-author">${escapeHtml(post.username || '—')}</span>
+        <span class="post-time">${timeAgo(post.created_at)}</span>
+      </div>
+    </div>
+    <div class="post-activity">
+      <span class="activity-badge ${act.type || ''}">${badgeLabel}</span>
+      <div class="activity-stats">${renderActivityStats(act)}</div>
+    </div>
+    ${notesHtml}
+    ${photoHtml}
+    <div class="post-actions">
+      <button class="btn-action btn-like ${post.user_has_liked ? 'liked' : ''}" data-post-id="${post.id}">
+        <span class="like-icon">🏋️</span>
+        <span class="likes-count">${post.likes_count}</span>
+      </button>
+    </div>
+  `;
+
+  article.querySelector('.btn-like').addEventListener('click', () => toggleLikeOnProfile(post.id));
+  return article;
+}
+
+async function toggleLikeOnProfile(postId) {
+  const postsContainer = document.getElementById('user-posts-container');
+  const card    = postsContainer.querySelector(`[data-post-id="${postId}"]`);
+  const btn     = card.querySelector('.btn-like');
+  const countEl = btn.querySelector('.likes-count');
+  const wasLiked = btn.classList.contains('liked');
+
+  btn.classList.toggle('liked', !wasLiked);
+  countEl.textContent = parseInt(countEl.textContent) + (wasLiked ? -1 : 1);
+
+  const res = await apiFetch(`/feed/${postId}/like`, { method: 'POST' });
+  if (res.ok) {
+    const data = await res.json();
+    countEl.textContent = data.likes_count;
+    btn.classList.toggle('liked', data.liked);
+  } else {
+    btn.classList.toggle('liked', wasLiked);
+    countEl.textContent = parseInt(countEl.textContent) + (wasLiked ? 1 : -1);
+  }
+}
+
+async function loadUserPosts(targetId, page = 1) {
+  if (postsLoading) return;
+  postsLoading = true;
+
+  const section   = document.getElementById('user-posts-section');
+  const container = document.getElementById('user-posts-container');
+  const loader    = document.getElementById('user-posts-loader');
+  const emptyEl   = document.getElementById('user-posts-empty');
+  const moreBtn   = document.getElementById('user-posts-more');
+
+  section.classList.remove('hidden');
+  loader.classList.remove('hidden');
+  moreBtn.classList.add('hidden');
+
+  const res = await apiFetch(`/users/${targetId}/posts?page=${page}`);
+  loader.classList.add('hidden');
+  postsLoading = false;
+
+  if (!res.ok) return;
+
+  const data = await res.json();
+  const posts = data.posts || [];
+
+  if (page === 1 && !posts.length) {
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+
+  posts.forEach(post => container.appendChild(renderPost(post)));
+
+  postsHasNext = data.has_next;
+  postsPage    = data.page;
+
+  if (postsHasNext) {
+    moreBtn.classList.remove('hidden');
+    moreBtn.onclick = () => loadUserPosts(targetId, postsPage + 1);
   }
 }
 
