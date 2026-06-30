@@ -48,14 +48,7 @@ body {
 
 .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
 
-.brand-icon {
-  width: 44px; height: 44px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-h));
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.brand-icon svg { width: 24px; height: 24px; fill: #fff; }
+.brand-logo { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; }
 
 .brand-name { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
 .brand-name span { color: var(--primary); }
