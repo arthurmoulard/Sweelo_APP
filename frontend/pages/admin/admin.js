@@ -398,7 +398,7 @@ async function loadUsers() {
     if (!res?.ok) throw new Error('Erreur serveur');
 
     const data = await res.json();
-    _allUsers = data.data ?? data;
+    _allUsers = data.items ?? data.data ?? data;
 
     hide('users-loading');
     renderUsers(_allUsers);

@@ -107,6 +107,8 @@ body { padding-left: 62px; }
   background: rgba(255, 107, 53, 0.1);
 }
 
+.sidenav .nav-links a.hidden { display: none !important; }
+
 /* ── Labels (masqués, 0 espace occupé quand cachés) ─────────────────────── */
 
 .sidenav .nav-label {
