@@ -5,8 +5,8 @@
 | Ressource | Lien / Statut |
 |-----------|---------------|
 | Sprint planning | [Kanban Trello](https://trello.com/b/GmPIQTbH) |
-| Sprint reviews | [Kanban Trello](https://trello.com/b/GmPIQTbH) |
-| Rétrospectives | [Kanban Trello](https://trello.com/b/GmPIQTbH) |
+| Sprint reviews | [Kanban Trello](https://docs.google.com/document/d/10Z5NioomScoixt_bi6mUBd90NUJDIA_rUB-Z5Fonjo8/edit?tab=t.0) |
+| Rétrospectives | [Kanban Trello](https://docs.google.com/document/d/10Z5NioomScoixt_bi6mUBd90NUJDIA_rUB-Z5Fonjo8/edit?tab=t.0) |
 | Dépôt source | [github.com/arthurmoulard/Sweelo_APP](https://github.com/arthurmoulard/Sweelo_APP) |
 | Suivi des bugs | [GitHub Issues](https://github.com/arthurmoulard/Sweelo_APP/issues) — tickets ouverts tout au long du projet pour signaler et suivre les bugs identifiés |
 | Preuves et résultats de tests | [Dossier `tests/`](https://github.com/arthurmoulard/Sweelo_APP/tree/main/tests) — 70 cas de test unitaires et d'intégration ([pytest](https://docs.pytest.org)), exécutables avec `pytest` — détail dans les tableaux ci-dessous |
@@ -16,7 +16,7 @@
 
 ### Gestion des sprints (Trello)
 
-L'ensemble du suivi agile (planification des sprints, reviews et rétrospectives) est géré via un board Kanban Trello :
+L'ensemble du suivi agile (planification des sprints, reviews et rétrospectives) est géré via un board Trello :
 **https://trello.com/b/GmPIQTbH**
 
 ### Tests
