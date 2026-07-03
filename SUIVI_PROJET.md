@@ -4,9 +4,9 @@
 
 | Ressource | Lien / Statut |
 |-----------|---------------|
-| Sprint planning | [Kanban GitHub Projects](https://github.com/users/arthurmoulard/projects/1/views/1) |
-| Sprint reviews | [Kanban GitHub Projects](https://github.com/users/arthurmoulard/projects/1/views/1) |
-| Rétrospectives | [Kanban GitHub Projects](https://github.com/users/arthurmoulard/projects/1/views/1) |
+| Sprint planning | [Kanban Trello](https://trello.com/b/GmPIQTbH) |
+| Sprint reviews | [Kanban Trello](https://trello.com/b/GmPIQTbH) |
+| Rétrospectives | [Kanban Trello](https://trello.com/b/GmPIQTbH) |
 | Dépôt source | [github.com/arthurmoulard/Sweelo_APP](https://github.com/arthurmoulard/Sweelo_APP) |
 | Suivi des bugs | [GitHub Issues](https://github.com/arthurmoulard/Sweelo_APP/issues) — tickets ouverts tout au long du projet pour signaler et suivre les bugs identifiés |
 | Preuves et résultats de tests | [Dossier `tests/`](https://github.com/arthurmoulard/Sweelo_APP/tree/main/tests) — 70 cas de test unitaires et d'intégration ([pytest](https://docs.pytest.org)), exécutables avec `pytest` — détail dans les tableaux ci-dessous |
@@ -14,10 +14,10 @@
 
 ## Détails
 
-### Gestion des sprints (GitHub)
+### Gestion des sprints (Trello)
 
-L'ensemble du suivi agile (planification des sprints, reviews et rétrospectives) est géré via un board Kanban GitHub Projects :
-**https://github.com/users/arthurmoulard/projects/1/views/1**
+L'ensemble du suivi agile (planification des sprints, reviews et rétrospectives) est géré via un board Kanban Trello :
+**https://trello.com/b/GmPIQTbH**
 
 ### Tests
 
