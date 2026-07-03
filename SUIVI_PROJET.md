@@ -4,9 +4,9 @@
 
 | Ressource | Lien / Statut |
 |-----------|---------------|
-| Sprint planning | [Kanban GitHub — issues du sprint](https://github.com/arthurmoulard/Sweelo_APP/issues?q=is%3Aissue+updated%3A%3E%40today-1w+sort%3Aupdated-desc) |
-| Sprint reviews | [Kanban GitHub — issues du sprint](https://github.com/arthurmoulard/Sweelo_APP/issues?q=is%3Aissue+updated%3A%3E%40today-1w+sort%3Aupdated-desc) |
-| Rétrospectives | [Kanban GitHub — issues du sprint](https://github.com/arthurmoulard/Sweelo_APP/issues?q=is%3Aissue+updated%3A%3E%40today-1w+sort%3Aupdated-desc) |
+| Sprint planning | [Kanban GitHub Projects](https://github.com/users/arthurmoulard/projects/1/views/1) |
+| Sprint reviews | [Kanban GitHub Projects](https://github.com/users/arthurmoulard/projects/1/views/1) |
+| Rétrospectives | [Kanban GitHub Projects](https://github.com/users/arthurmoulard/projects/1/views/1) |
 | Dépôt source | [github.com/arthurmoulard/Sweelo_APP](https://github.com/arthurmoulard/Sweelo_APP) |
 | Suivi des bugs | [GitHub Issues](https://github.com/arthurmoulard/Sweelo_APP/issues) — tickets ouverts tout au long du projet pour signaler et suivre les bugs identifiés |
 | Preuves et résultats de tests | [Dossier `tests/`](https://github.com/arthurmoulard/Sweelo_APP/tree/main/tests) — 70 cas de test unitaires et d'intégration ([pytest](https://docs.pytest.org)), exécutables avec `pytest` — détail dans les tableaux ci-dessous |
@@ -16,10 +16,8 @@
 
 ### Gestion des sprints (GitHub)
 
-L'ensemble du suivi agile (planification des sprints, reviews et rétrospectives) est géré en Kanban directement sur GitHub, via les issues du dépôt :
-**https://github.com/arthurmoulard/Sweelo_APP/issues?q=is%3Aissue+updated%3A%3E%40today-1w+sort%3Aupdated-desc**
-
-Cette vue filtre les issues mises à jour au cours de la dernière semaine (sprint en cours), triées par activité récente.
+L'ensemble du suivi agile (planification des sprints, reviews et rétrospectives) est géré via un board Kanban GitHub Projects :
+**https://github.com/users/arthurmoulard/projects/1/views/1**
 
 ### Tests
 
