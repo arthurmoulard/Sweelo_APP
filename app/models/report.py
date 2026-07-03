@@ -51,4 +51,3 @@ class Report(BaseModel):
             "status":      self.status,
         })
         return base
-    

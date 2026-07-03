@@ -59,4 +59,3 @@ class FeedPost(BaseModel):
         if current_user_id:
             base["user_has_liked"] = self.liked_by.filter_by(id=current_user_id).count() > 0
         return base
-    

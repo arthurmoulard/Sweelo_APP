@@ -32,4 +32,3 @@ class Comment(BaseModel):
             "content":  self.content,
         })
         return base
-    

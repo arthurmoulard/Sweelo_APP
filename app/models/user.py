@@ -72,4 +72,3 @@ class User(BaseModel):
             "is_banned":  self.is_banned,
         })
         return base
-    
