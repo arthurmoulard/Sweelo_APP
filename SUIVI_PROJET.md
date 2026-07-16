@@ -9,7 +9,7 @@
 | Rétrospectives | [Kanban Trello](https://docs.google.com/document/d/10Z5NioomScoixt_bi6mUBd90NUJDIA_rUB-Z5Fonjo8/edit?tab=t.0) |
 | Dépôt source | [github.com/arthurmoulard/Sweelo_APP](https://github.com/arthurmoulard/Sweelo_APP) |
 | Suivi des bugs | [GitHub Issues](https://github.com/arthurmoulard/Sweelo_APP/issues) — tickets ouverts tout au long du projet pour signaler et suivre les bugs identifiés |
-| Preuves et résultats de tests | [Dossier `tests/`](https://github.com/arthurmoulard/Sweelo_APP/tree/main/tests) — 70 cas de test unitaires et d'intégration ([pytest](https://docs.pytest.org)), exécutables avec `pytest` — détail dans les tableaux ci-dessous |
+| Preuves et résultats de tests | [Dossier `tests/`](https://github.com/arthurmoulard/Sweelo_APP/tree/main/tests) — 70 cas de test unitaires et d'intégration ([pytest](https://docs.pytest.org)), exécutables avec `pytest` — détail dans les tableaux ci-dessous. Complété par des tests manuels : **tous les endpoints de l'API ont été testés à la main via Postman** (pas de collection exportée dans le dépôt) |
 | Environnement de production | N/A — l'application n'est pas déployée en ligne ; elle s'exécute en local via Flask (`python run.py`), SQLite en développement / MySQL prévu en production |
 
 ## Détails
@@ -26,6 +26,8 @@ Les tests backend se trouvent dans le dépôt : **70 cas** au total (45 d'intég
 Exécution : `pytest` (base SQLite en mémoire dédiée aux tests, `.venv` doit contenir `pytest` + `pytest-flask` du `requirement.txt`). La modération OpenAI est neutralisée pendant les tests (aucun appel réseau réel), sauf dans `test_moderation_service.py` où elle est simulée (mock).
 
 **CI GitHub Actions** : [`.github/workflows/ci.yml`](https://github.com/arthurmoulard/Sweelo_APP/blob/main/.github/workflows/ci.yml) — lance `flake8` (lint) puis `pytest` (70 tests) sur chaque push et pull request, quelle que soit la branche.
+
+**Tests manuels (Postman)** : l'ensemble des endpoints de l'API (`/auth`, `/activities`, `/feed`, `/users`, `/admin`) a été testé manuellement via Postman en complément des tests automatisés — cas nominaux et cas d'erreur (400, 401, 403, 404, 409). Aucune collection Postman n'est versionnée dans le dépôt à ce jour.
 
 #### Tests unitaires — `tests/unit/` (25 cas)
 
