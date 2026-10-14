@@ -2,15 +2,12 @@
  * Page de connexion
  *
  * Validation côté client (format email, champ non vide).
- * Si l'utilisateur est déjà connecté (token présent), redirige vers index.html.
- * Après succès (200), les tokens sont stockés dans localStorage :
- *   sw_access_token  — JWT court (utilisé dans Authorization: Bearer)
- *   sw_refresh_token — JWT long (non utilisé côté client pour l'instant)
+ * Si l'utilisateur est déjà connecté, redirige vers index.html.
+ * Après succès (200), le serveur pose le JWT (access + refresh) dans des
+ * cookies httpOnly — le JS ne les manipule plus directement.
  *
  * Route API : POST /auth/login
  */
-
-const API_BASE = '/api/v1';
 
 const form       = document.getElementById('login-form');
 const emailInput = document.getElementById('email');
@@ -20,9 +17,11 @@ const alertEl    = document.getElementById('alert');
 const alertMsg   = document.getElementById('alert-msg');
 const alertIcon  = document.getElementById('alert-icon');
 
-if (localStorage.getItem('sw_access_token')) {
-  window.location.replace('../../index.html');
-}
+(async () => {
+  // Pas requireAuth() : ne pas rediriger vers login si on y est déjà.
+  const res = await fetch(`${API_BASE}/users/me`, { credentials: 'include' });
+  if (res.ok) window.location.replace('../../index.html');
+})();
 
 document.getElementById('toggle-pw').addEventListener('click', () => {
   const isHidden = pwInput.type === 'password';
@@ -86,9 +85,10 @@ form.addEventListener('submit', async (e) => {
 
   try {
     const res = await fetch(`${API_BASE}/auth/login`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
+      method:      'POST',
+      headers:     { 'Content-Type': 'application/json' },
+      credentials: 'include', // reçoit les cookies httpOnly posés par le serveur
+      body:        JSON.stringify({
         email:    emailInput.value.trim().toLowerCase(),
         password: pwInput.value,
       }),
@@ -97,8 +97,6 @@ form.addEventListener('submit', async (e) => {
     const data = await res.json();
 
     if (res.status === 200) {
-      localStorage.setItem('sw_access_token',  data.access_token);
-      localStorage.setItem('sw_refresh_token', data.refresh_token);
       showAlert('success', 'Connexion réussie ! Redirection…');
       setTimeout(() => { window.location.replace('../../index.html'); }, 1000);
     } else if (res.status === 401) {

@@ -11,44 +11,14 @@
  *   POST   /feed/:id/comments     — ajouter un commentaire
  *   DELETE /feed/comments/:id     — supprimer un commentaire
  *
- * currentUserId est décodé depuis le JWT (claim "sub") pour masquer
- * le formulaire de commentaire sur ses propres posts.
+ * currentUserId est récupéré via GET /users/me (apiFetch/requireAuth,
+ * fournis par shared/auth.js) pour masquer le formulaire de commentaire
+ * sur ses propres posts.
  */
-
-// ── Config ────────────────────────────────────────────────────────────────────
-const API_BASE = '/api/v1';
-
-if (!localStorage.getItem('sw_access_token')) {
-  window.location.replace('../../index.html');
-}
-
-// ── API helper ────────────────────────────────────────────────────────────────
-
-async function apiFetch(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('sw_access_token')}`,
-      ...(options.headers || {}),
-    },
-  });
-  if (res.status === 401) {
-    localStorage.removeItem('sw_access_token');
-    localStorage.removeItem('sw_refresh_token');
-    window.location.replace('../../index.html');
-  }
-  return res;
-}
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
-const currentUserId = (() => {
-  try {
-    const token = localStorage.getItem('sw_access_token');
-    return JSON.parse(atob(token.split('.')[1])).sub;
-  } catch { return null; }
-})();
+let currentUserId = null;
 
 function initials(name) {
   return name ? name.slice(0, 2).toUpperCase() : '?';
@@ -409,12 +379,7 @@ async function loadFeed(page = 1) {
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
-  localStorage.removeItem('sw_access_token');
-  localStorage.removeItem('sw_refresh_token');
-  window.location.replace('../../index.html');
-});
+document.getElementById('logout-btn').addEventListener('click', logout);
 
 // ── Load more ─────────────────────────────────────────────────────────────────
 
@@ -422,4 +387,11 @@ loadMoreBtn.addEventListener('click', () => loadFeed(currentPage + 1));
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-loadFeed(1);
+async function init() {
+  const me = await requireAuth();
+  if (!me) return;
+  currentUserId = me.id;
+  loadFeed(1);
+}
+
+init();

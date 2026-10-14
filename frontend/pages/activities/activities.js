@@ -16,30 +16,7 @@
  *   DELETE /feed/:id/photo      — supprimer photo
  */
 
-const API_BASE = '/api/v1';
-
-if (!localStorage.getItem('sw_access_token')) {
-  window.location.replace('../../index.html');
-}
-
-// ── API helper ────────────────────────────────────────────────────────────────
-
-async function apiFetch(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('sw_access_token')}`,
-      ...(options.headers || {}),
-    },
-  });
-  if (res.status === 401) {
-    localStorage.removeItem('sw_access_token');
-    localStorage.removeItem('sw_refresh_token');
-    window.location.replace('../../index.html');
-  }
-  return res;
-}
+/* apiFetch/requireAuth/logout sont fournis par shared/auth.js. */
 
 // ── Sport config ──────────────────────────────────────────────────────────────
 
@@ -304,10 +281,12 @@ async function uploadPhoto(postId) {
   if (!photoInput.files[0]) return null;
   const fd = new FormData();
   fd.append('photo', photoInput.files[0]);
-  // On n'utilise pas apiFetch car on envoie multipart (pas JSON)
+  // On n'utilise pas apiFetch car on envoie multipart (pas JSON) ;
+  // il faut malgré tout le cookie (credentials) et le jeton CSRF (POST).
   const res = await fetch(`${API_BASE}/feed/${postId}/photo`, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('sw_access_token')}` },
+    headers: { 'X-CSRF-TOKEN': getCookie('csrf_access_token') },
+    credentials: 'include',
     body: fd,
   });
   if (res.ok) {
@@ -531,13 +510,14 @@ document.getElementById('new-btn-empty').addEventListener('click', () => openMod
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
-  localStorage.removeItem('sw_access_token');
-  localStorage.removeItem('sw_refresh_token');
-  window.location.replace('../../index.html');
-});
+document.getElementById('logout-btn').addEventListener('click', logout);
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-loadActivities(1);
+async function init() {
+  const me = await requireAuth();
+  if (!me) return;
+  loadActivities(1);
+}
+
+init();

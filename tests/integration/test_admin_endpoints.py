@@ -6,7 +6,7 @@ from app.models.user import User
 
 
 @pytest.fixture()
-def admin_headers(client, app):
+def admin_headers(client, app, auth_headers_from):
     """Inscrit un utilisateur puis le promeut admin directement en base,
     car il n'existe pas d'endpoint pour le faire via l'API."""
     client.post("/api/v1/auth/register", json={
@@ -20,8 +20,7 @@ def admin_headers(client, app):
     resp = client.post("/api/v1/auth/login", json={
         "email": "admin@sweelo.io", "password": "Sup3rSecret1",
     })
-    token = resp.get_json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
+    return auth_headers_from(resp)
 
 
 def _create_activity(client, headers):

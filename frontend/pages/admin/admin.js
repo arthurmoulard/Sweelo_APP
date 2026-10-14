@@ -11,82 +11,8 @@
      POST   /admin/users/:id/unban
    ============================================================ */
 
-const API_BASE   = '/api/v1';
-const TOKEN_KEY  = 'sw_access_token';
-
-/* ============================================================
-   1. UTILITAIRES AUTH
-   ============================================================ */
-
-function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-function decodeToken(token) {
-  try {
-    return JSON.parse(atob(token.split('.')[1]));
-  } catch {
-    return null;
-  }
-}
-
-function isTokenExpired(token) {
-  const payload = decodeToken(token);
-  if (!payload) return true;
-  return payload.exp * 1000 < Date.now();
-}
-
-/**
- * Vérifie au chargement que l'utilisateur est bien admin.
- * Redirige vers login si ce n'est pas le cas.
- */
-function guardAdmin() {
-  const token = getToken();
-
-  if (!token || isTokenExpired(token)) {
-    localStorage.removeItem(TOKEN_KEY);
-    window.location.replace('../login/login.html');
-    return false;
-  }
-
-  const payload = decodeToken(token);
-  if (!payload?.is_admin) {
-    window.location.replace('../feed/feed.html');
-    return false;
-  }
-
-  return true;
-}
-
-/* ============================================================
-   2. UTILITAIRES API
-   ============================================================ */
-
-/**
- * Wrapper fetch authentifié.
- * Gère automatiquement le header Authorization et le Content-Type.
- */
-async function apiFetch(path, options = {}) {
-  const token = getToken();
-
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-
-  // Token expiré côté serveur → logout
-  if (res.status === 401) {
-    localStorage.removeItem(TOKEN_KEY);
-    window.location.replace('../login/login.html');
-    return null;
-  }
-
-  return res;
-}
+/* apiFetch/requireAuth/logout sont fournis par shared/auth.js (cookies
+   httpOnly, plus de token en localStorage/Authorization). */
 
 /* ============================================================
    3. UTILITAIRES UI
@@ -806,10 +732,7 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   openModal(
     'Déconnexion',
     'Tu vas être déconnecté de l\'interface d\'administration.',
-    () => {
-      localStorage.removeItem(TOKEN_KEY);
-      window.location.replace('../login/login.html');
-    }
+    logout
   );
 });
 
@@ -817,10 +740,17 @@ document.getElementById('logout-btn').addEventListener('click', () => {
    9. INIT
    ============================================================ */
 
-(function init() {
-  if (!guardAdmin()) return;
+async function init() {
+  const me = await requireAuth();
+  if (!me) return;
+  if (!me.is_admin) {
+    window.location.replace('../feed/feed.html');
+    return;
+  }
 
   // Chargement initial : stats + onglet signalements
   loadStats();
   switchTab('tab-reports');
-})();
+}
+
+init();

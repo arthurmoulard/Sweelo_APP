@@ -1,7 +1,9 @@
-﻿from flask_restx import Namespace, Resource, fields
+﻿from flask import jsonify
+from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import (
     create_access_token, create_refresh_token,
     jwt_required, get_jwt_identity, get_jwt,
+    set_access_cookies, set_refresh_cookies, unset_jwt_cookies,
 )
 from app.extensions import facade, db
 
@@ -36,10 +38,13 @@ class Register(Resource):
                 password=data["password"],
             )
             claims = {"is_admin": user.is_admin}
-            result = user.to_dict()
-            result["access_token"]  = create_access_token(identity=user.id, additional_claims=claims)
-            result["refresh_token"] = create_refresh_token(identity=user.id, additional_claims=claims)
-            return result, 201
+            access_token  = create_access_token(identity=user.id, additional_claims=claims)
+            refresh_token = create_refresh_token(identity=user.id, additional_claims=claims)
+            resp = jsonify(user.to_dict())
+            resp.status_code = 201
+            set_access_cookies(resp, access_token)
+            set_refresh_cookies(resp, refresh_token)
+            return resp
         except ValueError as e:
             ns.abort(409, str(e))
 
@@ -56,10 +61,12 @@ class Login(Resource):
         try:
             user = facade.login(email=data["email"], password=data["password"])
             claims = {"is_admin": user.is_admin}
-            return {
-                "access_token":  create_access_token(identity=user.id, additional_claims=claims),
-                "refresh_token": create_refresh_token(identity=user.id, additional_claims=claims),
-            }, 200
+            access_token  = create_access_token(identity=user.id, additional_claims=claims)
+            refresh_token = create_refresh_token(identity=user.id, additional_claims=claims)
+            resp = jsonify({"message": "Login successful"})
+            set_access_cookies(resp, access_token)
+            set_refresh_cookies(resp, refresh_token)
+            return resp
         except (ValueError, PermissionError) as e:
             ns.abort(401, str(e))
 
@@ -77,7 +84,10 @@ class Refresh(Resource):
         if not user or user.is_banned:
             ns.abort(401, "Account unavailable")
         claims = {"is_admin": user.is_admin}
-        return {"access_token": create_access_token(identity=user_id, additional_claims=claims)}, 200
+        access_token = create_access_token(identity=user_id, additional_claims=claims)
+        resp = jsonify({"message": "Token refreshed"})
+        set_access_cookies(resp, access_token)
+        return resp
 
 
 @ns.route("/logout")
@@ -92,4 +102,6 @@ class Logout(Resource):
         jti = get_jwt()["jti"]
         db.session.add(TokenBlocklist(jti=jti))
         db.session.commit()
-        return {"message": "Logged out"}, 200
+        resp = jsonify({"message": "Logged out"})
+        unset_jwt_cookies(resp)
+        return resp

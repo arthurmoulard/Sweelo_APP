@@ -15,33 +15,7 @@
  *   DELETE /users/:id/friend   — retirer
  */
 
-// ── Config ────────────────────────────────────────────────────────────────────
-const API_BASE = '/api/v1';
-
-// Redirige vers l'accueil si pas de token
-if (!localStorage.getItem('sw_access_token')) {
-  window.location.replace('../../index.html');
-}
-
-// ── API helper ────────────────────────────────────────────────────────────────
-
-async function apiFetch(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('sw_access_token')}`,
-      ...(options.headers || {}),
-    },
-  });
-  // Token expiré → déconnexion automatique
-  if (res.status === 401) {
-    localStorage.removeItem('sw_access_token');
-    localStorage.removeItem('sw_refresh_token');
-    window.location.replace('../../index.html');
-  }
-  return res;
-}
+/* apiFetch/requireAuth/logout sont fournis par shared/auth.js. */
 
 // ── Utilitaires ───────────────────────────────────────────────────────────────
 
@@ -245,13 +219,14 @@ async function removeFriend(id, username) {
 
 // ── Déconnexion ───────────────────────────────────────────────────────────────
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
-  localStorage.removeItem('sw_access_token');
-  localStorage.removeItem('sw_refresh_token');
-  window.location.replace('../../index.html');
-});
+document.getElementById('logout-btn').addEventListener('click', logout);
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-loadFriends();
+async function init() {
+  const me = await requireAuth();
+  if (!me) return;
+  loadFriends();
+}
+
+init();

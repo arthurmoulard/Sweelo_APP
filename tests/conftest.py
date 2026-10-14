@@ -32,7 +32,12 @@ def app(monkeypatch):
 
 @pytest.fixture()
 def client(app):
-    return app.test_client()
+    # use_cookies=False : les tests font coexister plusieurs identités (alice,
+    # bob, un admin...) sur le même client. Avec la cookie-jar automatique du
+    # client de test, la dernière connexion effectuée écraserait les cookies
+    # des autres utilisateurs. On gère donc les cookies nous-mêmes, un par un,
+    # via l'en-tête "Cookie" explicite renvoyé par chaque fixture d'identité.
+    return app.test_client(use_cookies=False)
 
 
 def _register(client, email="alice@sweelo.io", username="alice", password=DEFAULT_PASSWORD):
@@ -41,12 +46,36 @@ def _register(client, email="alice@sweelo.io", username="alice", password=DEFAUL
     })
 
 
+def _cookie_value(resp, name):
+    """Extrait la valeur d'un cookie posé par le serveur via Set-Cookie."""
+    for raw in resp.headers.get_all("Set-Cookie"):
+        if raw.startswith(f"{name}="):
+            return raw.split(";", 1)[0].split("=", 1)[1]
+    return None
+
+
+def _auth_headers_from(resp):
+    """Construit les en-têtes identifiant un utilisateur à partir de la réponse
+    de login/register : le JWT (cookie httpOnly) en en-tête Cookie explicite,
+    et le jeton CSRF associé en en-tête X-CSRF-TOKEN."""
+    access_cookie = _cookie_value(resp, "access_token_cookie")
+    csrf = _cookie_value(resp, "csrf_access_token")
+    return {"Cookie": f"access_token_cookie={access_cookie}", "X-CSRF-TOKEN": csrf}
+
+
+@pytest.fixture()
+def auth_headers_from():
+    """Expose _auth_headers_from aux autres fichiers de test (ex: admin_headers
+    dans test_admin_endpoints.py) sans import inter-modules fragile."""
+    return _auth_headers_from
+
+
 @pytest.fixture()
 def auth_user(client):
     """Inscrit l'utilisateur par défaut et retourne (headers, user_id)."""
     resp = _register(client)
     data = resp.get_json()
-    return {"Authorization": f"Bearer {data['access_token']}"}, data["id"]
+    return _auth_headers_from(resp), data["id"]
 
 
 @pytest.fixture()
@@ -60,4 +89,4 @@ def second_user(client):
     """Inscrit un second utilisateur ('bob') et retourne (headers, user_id)."""
     resp = _register(client, email="bob@sweelo.io", username="bob")
     data = resp.get_json()
-    return {"Authorization": f"Bearer {data['access_token']}"}, data["id"]
+    return _auth_headers_from(resp), data["id"]

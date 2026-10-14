@@ -14,30 +14,7 @@
  *   GET    /feed/search?type=…&page=N   — posts filtrés par type de sport
  */
 
-const API_BASE = '/api/v1';
-
-if (!localStorage.getItem('sw_access_token')) {
-  window.location.replace('../../index.html');
-}
-
-// ── API helper ────────────────────────────────────────────────────────────────
-
-async function apiFetch(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('sw_access_token')}`,
-      ...(options.headers || {}),
-    },
-  });
-  if (res.status === 401) {
-    localStorage.removeItem('sw_access_token');
-    localStorage.removeItem('sw_refresh_token');
-    window.location.replace('../../index.html');
-  }
-  return res;
-}
+/* apiFetch/requireAuth/logout sont fournis par shared/auth.js. */
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -87,12 +64,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
-  localStorage.removeItem('sw_access_token');
-  localStorage.removeItem('sw_refresh_token');
-  window.location.replace('../../index.html');
-});
+document.getElementById('logout-btn').addEventListener('click', logout);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ONGLET UTILISATEURS
@@ -331,5 +303,11 @@ async function loadActivities(append = false) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-buildSportChips();
-loadFriends();
+async function init() {
+  const me = await requireAuth();
+  if (!me) return;
+  buildSportChips();
+  loadFriends();
+}
+
+init();

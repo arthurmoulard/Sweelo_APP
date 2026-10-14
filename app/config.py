@@ -15,9 +15,16 @@ class BaseConfig:
     JWT_SECRET_KEY            = os.getenv("JWT_SECRET_KEY", "sweelo-jwt-secret-change-in-prod")
     JWT_ACCESS_TOKEN_EXPIRES   = timedelta(hours=24)
     JWT_REFRESH_TOKEN_EXPIRES  = timedelta(days=30)
-    JWT_TOKEN_LOCATION         = ["headers"]
-    JWT_HEADER_NAME            = "Authorization"
-    JWT_HEADER_TYPE            = "Bearer"
+
+    # Cookies httpOnly plutôt que localStorage + header Authorization :
+    # le JS ne peut plus lire le token, ce qui ferme l'exfiltration via XSS.
+    JWT_TOKEN_LOCATION      = ["cookies"]
+    JWT_COOKIE_SECURE       = False   # ProductionConfig repasse ça à True (HTTPS)
+    JWT_COOKIE_SAMESITE     = "Lax"
+    JWT_COOKIE_CSRF_PROTECT = True    # double-submit CSRF (nécessaire : les cookies sont vulnérables au CSRF)
+    JWT_SESSION_COOKIE      = False   # sinon le cookie disparaît à la fermeture du navigateur
+    JWT_ACCESS_COOKIE_PATH  = "/"
+    JWT_REFRESH_COOKIE_PATH = "/api/v1/auth/refresh"
 
     # ── SQLAlchemy ─────────────────────────────────────────────────────────────
     SQLALCHEMY_TRACK_MODIFICATIONS = False

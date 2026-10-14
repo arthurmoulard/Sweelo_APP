@@ -4,14 +4,12 @@
  * Validation en temps réel : email, username (3–30 chars, alphanumeric + _-),
  * force du mot de passe (score 1–5), confirmation.
  *
- * Le backend renvoie les tokens directement dans la réponse 201,
+ * Le serveur pose directement le JWT dans des cookies httpOnly à l'inscription,
  * ce qui évite un second appel de login post-inscription.
  * Redirige vers feed.html après 1,5 s.
  *
  * Route API : POST /auth/register
  */
-
-const API_BASE = '/api/v1';
 
 const form       = document.getElementById('register-form');
 const emailInput = document.getElementById('email');
@@ -138,9 +136,10 @@ form.addEventListener('submit', async (e) => {
 
   try {
     const res = await fetch(`${API_BASE}/auth/register`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
+      method:      'POST',
+      headers:     { 'Content-Type': 'application/json' },
+      credentials: 'include', // reçoit les cookies httpOnly posés par le serveur
+      body:        JSON.stringify({
         email:    emailInput.value.trim().toLowerCase(),
         username: userInput.value.trim(),
         password: pwInput.value,
@@ -150,8 +149,6 @@ form.addEventListener('submit', async (e) => {
     const data = await res.json();
 
     if (res.status === 201) {
-      localStorage.setItem('sw_access_token',  data.access_token);
-      localStorage.setItem('sw_refresh_token', data.refresh_token);
       showAlert('success', `Compte créé ! Bienvenue, ${data.username} 🎉 Redirection…`);
       form.reset();
       document.getElementById('strength-fill').style.width = '0%';
