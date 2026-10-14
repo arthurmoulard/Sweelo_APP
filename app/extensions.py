@@ -27,5 +27,13 @@ def init_facade():
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
     from app.models.token_blocklist import TokenBlocklist
+    from app.models.user import User
+
     jti = jwt_payload["jti"]
-    return db.session.query(TokenBlocklist.id).filter_by(jti=jti).first() is not None
+    if db.session.query(TokenBlocklist.id).filter_by(jti=jti).first() is not None:
+        return True
+
+    # Un utilisateur banni perd l'accès immédiatement, même si son token
+    # (jusqu'à 24h, voire 30j pour un refresh token) n'a pas encore expiré.
+    user = db.session.get(User, jwt_payload.get("sub"))
+    return user is None or user.is_banned

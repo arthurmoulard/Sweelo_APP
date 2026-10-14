@@ -38,12 +38,11 @@ class SweeloFacade:
         from datetime import date
         try:
             parsed = date.fromisoformat(data.get("date", ""))
-            if parsed > date.today():
-                raise ValueError("Activity date cannot be in the future")
-            data["date"] = parsed
-        except (TypeError, ValueError) as exc:
-            if "future" in str(exc):
-                raise
+        except (TypeError, ValueError):
+            raise ValueError("Invalid date")
+        if parsed > date.today():
+            raise ValueError("Activity date cannot be in the future")
+        data["date"] = parsed
         notes = data.get("notes", "") or ""
         if notes:
             safe, reason = self.moderation.check(notes)
@@ -76,12 +75,11 @@ class SweeloFacade:
         if "date" in data:
             try:
                 parsed = date.fromisoformat(data["date"])
-                if parsed > date.today():
-                    raise ValueError("Activity date cannot be in the future")
-                data["date"] = parsed
-            except (TypeError, ValueError) as exc:
-                if "future" in str(exc):
-                    raise
+            except (TypeError, ValueError):
+                raise ValueError("Invalid date")
+            if parsed > date.today():
+                raise ValueError("Activity date cannot be in the future")
+            data["date"] = parsed
         if "notes" in data and data["notes"]:
             safe, reason = self.moderation.check(data["notes"])
             if not safe:

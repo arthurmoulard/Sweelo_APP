@@ -21,8 +21,21 @@ def create_app(config_name: str = "default") -> Flask:
     # ── 1. Chargement de la configuration ─────────────────────────────────────
     app.config.from_object(config[config_name])
 
+    if config_name == "production":
+        _required_env = ("SECRET_KEY", "JWT_SECRET_KEY", "DATABASE_URL")
+        _missing = [name for name in _required_env if not os.getenv(name)]
+        if _missing:
+            raise RuntimeError(
+                "Variables d'environnement manquantes pour la production : "
+                + ", ".join(_missing)
+                + ". L'app refuse de démarrer avec les secrets par défaut."
+            )
+
     # ── 2. Initialisation des extensions ──────────────────────────────────────
-    CORS(app, origins=["http://localhost:8080", "http://localhost:5000"], supports_credentials=True)
+    cors_origins = os.getenv(
+        "CORS_ORIGINS", "http://localhost:8080,http://localhost:5000"
+    ).split(",")
+    CORS(app, origins=cors_origins, supports_credentials=True)
     db.init_app(app)
     jwt.init_app(app)
 

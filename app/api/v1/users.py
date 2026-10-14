@@ -2,8 +2,9 @@ import os
 import uuid
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask import request, request as flask_request
+from flask import request
 from app.extensions import facade
+from app.utils import is_valid_image
 
 UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
 FRONTEND_URL = 'http://localhost:5000'
@@ -65,13 +66,15 @@ class MyAvatar(Resource):
         if not user:
             ns.abort(404, "User not found")
 
-        file = flask_request.files.get('avatar')
+        file = request.files.get('avatar')
         if not file or not file.filename:
             ns.abort(400, "No file provided")
 
         ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
         if ext not in ALLOWED_EXT:
             ns.abort(400, f"File type not allowed. Use: {', '.join(ALLOWED_EXT)}")
+        if not is_valid_image(file, ext):
+            ns.abort(400, "File content does not match its extension")
 
         # Supprime l'ancienne photo de profil si elle existe
         if user.avatar_url and '/uploads/' in user.avatar_url:

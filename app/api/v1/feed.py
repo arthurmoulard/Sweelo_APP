@@ -4,6 +4,7 @@ from flask import request as flask_request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import facade
+from app.utils import is_valid_image
 
 # Dossier de stockage local des photos (servi par le frontend HTTP server)
 UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
@@ -148,6 +149,8 @@ class PostPhoto(Resource):
         ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
         if ext not in ALLOWED_EXT:
             ns.abort(400, f"File type not allowed. Use: {', '.join(ALLOWED_EXT)}")
+        if not is_valid_image(file, ext):
+            ns.abort(400, "File content does not match its extension")
 
         # Supprime l'ancienne photo si elle existe
         if post.photo_url:

@@ -1,5 +1,5 @@
 ﻿from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import facade
 
 ns = Namespace("admin", description="Administration et modération")
@@ -10,8 +10,10 @@ report_action_model = ns.model("ReportAction", {
 
 
 def admin_required():
-    claims = get_jwt()
-    if not claims.get("is_admin"):
+    """Vérifie le statut admin en base plutôt que de se fier au claim du JWT,
+    qui reste figé à sa valeur de connexion pendant toute la durée du token."""
+    user = facade.user_repository.get_by_id(get_jwt_identity())
+    if not user or not user.is_admin:
         ns.abort(403, "Admin access required")
 
 
