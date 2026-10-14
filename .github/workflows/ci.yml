@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirement.txt
+
+      - name: Install dependencies
+        run: pip install -r requirement.txt
+
+      - name: Lint (flake8)
+        run: flake8 app/ run.py tests/
+
+      - name: Tests (pytest)
+        env:
+          SECRET_KEY: ci-secret
+          JWT_SECRET_KEY: ci-jwt-secret
+        run: pytest -v

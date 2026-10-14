@@ -1,4 +1,6 @@
-from flask import Flask
+import os
+from flask import Flask, send_from_directory
+from flask_cors import CORS
 from app.config import config
 from app.extensions import db, jwt, init_facade
 
@@ -19,7 +21,21 @@ def create_app(config_name: str = "default") -> Flask:
     # ── 1. Chargement de la configuration ─────────────────────────────────────
     app.config.from_object(config[config_name])
 
+    if config_name == "production":
+        _required_env = ("SECRET_KEY", "JWT_SECRET_KEY", "DATABASE_URL")
+        _missing = [name for name in _required_env if not os.getenv(name)]
+        if _missing:
+            raise RuntimeError(
+                "Variables d'environnement manquantes pour la production : "
+                + ", ".join(_missing)
+                + ". L'app refuse de démarrer avec les secrets par défaut."
+            )
+
     # ── 2. Initialisation des extensions ──────────────────────────────────────
+    cors_origins = os.getenv(
+        "CORS_ORIGINS", "http://localhost:8080,http://localhost:5000"
+    ).split(",")
+    CORS(app, origins=cors_origins, supports_credentials=True)
     db.init_app(app)
     jwt.init_app(app)
 
@@ -52,9 +68,29 @@ def create_app(config_name: str = "default") -> Flask:
 
     # ── 5. Création des tables BDD (si inexistantes) ──────────────────────────
     with app.app_context():
+        from app.models.token_blocklist import TokenBlocklist  # noqa: F401
         db.create_all()
+        # Migration légère : ajoute avatar_url si la colonne n'existe pas encore
+        from sqlalchemy import text
+        try:
+            db.session.execute(text('ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500)'))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+    # ── 6. Service des fichiers statiques du frontend ─────────────────────────
+    _frontend = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+
+    @app.route('/', defaults={'path': 'index.html'})
+    @app.route('/<path:path>')
+    def serve_frontend(path):
+        target = os.path.join(_frontend, path)
+        if os.path.isfile(target):
+            return send_from_directory(_frontend, path)
+        return send_from_directory(_frontend, 'index.html')
 
     return app
+
 
 """
 Sweelo — Application Factory

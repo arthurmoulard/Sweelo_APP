@@ -709,8 +709,8 @@ def test_create_activity_missing_type():
 
 ### JWT (Flask-JWT-Extended)
 
-**Choix :** Authentification stateless par tokens JWT.
-**Justification :** Aucune session serveur à gérer — scalabilité horizontale facilitée. Le token contient l'`id`, le rôle (`is_admin`) et le statut (`is_banned`) de l'utilisateur, éliminant un aller-retour BDD supplémentaire par requête protégée. Compatible PWA sans cookie de session traditionnel. Nous avions déjà manipulé JWT dans des projets antérieurs, ce qui a facilité son intégration.
+**Choix :** Authentification stateless par tokens JWT, transportés dans des cookies httpOnly (et non en `localStorage` + header `Authorization`).
+**Justification :** Pas de table de session côté serveur — le JWT reste auto-porteur (id, rôle `is_admin`) et la scalabilité horizontale reste facile. Le cookie httpOnly empêche le JS de lire le token (fermant l'exfiltration via XSS), contrepartie : protection CSRF double-submit activée (Flask-JWT-Extended). Le statut `is_banned` est revérifié en base à chaque requête protégée (le ban doit être immédiat, pas seulement au prochain login). Nous avions déjà manipulé JWT dans des projets antérieurs, ce qui a facilité son intégration.
 
 ### bcrypt
 

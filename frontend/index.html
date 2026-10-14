@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sweelo</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#60a5fa" />
+</head>
+<body>
+  <script src="/shared/auth.js"></script>
+  <script>
+    (async () => {
+      const res = await fetch(`${API_BASE}/users/me`, { credentials: 'include' });
+      window.location.replace(res.ok ? './pages/feed/feed.html' : './pages/register/register.html');
+    })();
+  </script>
+</body>
+</html>

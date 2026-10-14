@@ -24,7 +24,14 @@ class FeedRepository(BaseRepository):
             .filter(FeedPost.user_id.in_(ids))
             .order_by(FeedPost.created_at.desc())
             .paginate(page=page, per_page=limit, error_out=False)
-            .items
+        )
+
+    def get_comments(self, post_id, page=1, limit=20):
+        return (
+            Comment.query
+            .filter_by(post_id=post_id)
+            .order_by(Comment.created_at.asc())
+            .paginate(page=page, per_page=limit, error_out=False)
         )
 
     def has_liked(self, post_id, user_id):
