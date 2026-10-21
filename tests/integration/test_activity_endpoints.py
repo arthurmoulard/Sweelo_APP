@@ -47,6 +47,20 @@ class TestActivityCreation:
 
         assert resp.status_code == 400
 
+    def test_create_activity_ignores_forced_id(self, client, auth_headers):
+        resp = _create_activity(client, auth_headers, id="forced-id-0001")
+
+        assert resp.status_code == 201
+        assert resp.get_json()["id"] != "forced-id-0001"
+
+    def test_create_activity_ignores_foreign_user_id(self, client, auth_headers, second_user):
+        _, bob_id = second_user
+
+        resp = _create_activity(client, auth_headers, user_id=bob_id)
+
+        assert resp.status_code == 201
+        assert resp.get_json()["user_id"] != bob_id
+
 
 class TestActivityDetail:
 

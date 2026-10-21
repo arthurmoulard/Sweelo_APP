@@ -8,8 +8,13 @@ class ActivityRepository(BaseRepository):
     def __init__(self):
         super().__init__(Activity)
 
-    def create(self, user_id, **data):
-        activity = Activity(user_id=user_id, **data)
+    # Champs qu'un client a le droit de renseigner : id, user_id, created_at…
+    # sont fixés par le serveur et ignorés s'ils arrivent dans le JSON (mass assignment).
+    CREATABLE_FIELDS = {"type", "distance_km", "duration_min", "calories", "date", "notes", "extra_data"}
+
+    def create(self, user_id, data):
+        safe_data = {k: v for k, v in data.items() if k in self.CREATABLE_FIELDS}
+        activity = Activity(user_id=user_id, **safe_data)
         return self.save(activity)
 
     def get_by_user(self, user_id, page=1, limit=20):

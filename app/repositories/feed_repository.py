@@ -15,7 +15,7 @@ class FeedRepository(BaseRepository):
         return self.save(post)
 
     def get_post(self, post_id):
-        return self.model.query.get(post_id)
+        return db.session.get(self.model, post_id)
 
     def get_feed(self, friend_ids, current_user_id, page=1, limit=20):
         ids = friend_ids + [current_user_id]

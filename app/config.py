@@ -26,6 +26,11 @@ class BaseConfig:
     JWT_ACCESS_COOKIE_PATH  = "/"
     JWT_REFRESH_COOKIE_PATH = "/api/v1/auth/refresh"
 
+    # Tolérance de 10 s sur les dates des tokens (iat, nbf, exp) : sans elle, un
+    # léger recul de l'horloge (resynchronisation NTP, WSL) fait rejeter un token
+    # tout juste émis comme « pas encore valide ».
+    JWT_DECODE_LEEWAY       = 10
+
     # ── SQLAlchemy ─────────────────────────────────────────────────────────────
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

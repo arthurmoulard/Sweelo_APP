@@ -3,6 +3,7 @@ from app.repositories.activity_repository import ActivityRepository
 from app.repositories.feed_repository import FeedRepository
 from app.repositories.report_repository import ReportRepository
 from app.services.moderation_service import ModerationService
+from app.extensions import db
 
 
 class SweeloFacade:
@@ -48,7 +49,7 @@ class SweeloFacade:
             safe, reason = self.moderation.check(notes)
             if not safe:
                 raise ValueError(f"Content rejected ({reason})")
-        activity = self.activity_repository.create(user_id=user_id, **data)
+        activity = self.activity_repository.create(user_id, data)
         self.feed_repository.create_post(user_id=user_id, activity_id=activity.id)
         return activity
 
@@ -103,7 +104,7 @@ class SweeloFacade:
 
     def delete_comment(self, comment_id, user_id):
         from app.models.comment import Comment
-        comment = Comment.query.get(comment_id)
+        comment = db.session.get(Comment, comment_id)
         if not comment:
             raise LookupError("Comment not found")
         if comment.user_id != user_id:

@@ -183,7 +183,7 @@ function renderReports(reports) {
             ${{ pending: 'En attente', reviewed: 'Traité', dismissed: 'Rejeté' }[report.status] ?? report.status}
           </span>
           <span class="text-muted" style="font-size:.78rem">
-            Signalé par <strong style="color:var(--text)">${report.reporter_username ?? '—'}</strong>
+            Signalé par <strong style="color:var(--text)">${escapeHtmlOv(report.reporter_username ?? '—')}</strong>
           </span>
         </div>
         <span class="report-card__date">${formatDate(report.created_at)}</span>
@@ -191,11 +191,11 @@ function renderReports(reports) {
 
       <div class="report-card__content">
         <div class="report-card__content-label">Contenu signalé</div>
-        ${report.target_content ?? '<em style="color:var(--muted)">Contenu supprimé ou indisponible</em>'}
+        ${report.target_content != null ? escapeHtmlOv(report.target_content) : '<em style="color:var(--muted)">Contenu supprimé ou indisponible</em>'}
       </div>
 
       <div class="report-card__reason">
-        <strong>Raison :</strong> ${report.reason ?? '—'}
+        <strong>Raison :</strong> ${escapeHtmlOv(report.reason ?? '—')}
       </div>
 
       ${isPending ? `
@@ -357,10 +357,10 @@ function renderUsers(users) {
       <td>
         <div class="user-cell">
           <div class="user-avatar">${getInitial(user.username)}</div>
-          <span class="user-username">${user.username}</span>
+          <span class="user-username">${escapeHtmlOv(user.username)}</span>
         </div>
       </td>
-      <td class="user-email">${user.email}</td>
+      <td class="user-email">${escapeHtmlOv(user.email)}</td>
       <td>${formatDate(user.created_at)}</td>
       <td>
         <span class="${user.is_banned ? 'status-banned' : 'status-active'}">
@@ -372,7 +372,7 @@ function renderUsers(users) {
           class="btn btn--sm ${user.is_banned ? 'btn--secondary' : 'btn--danger'}"
           data-action="${user.is_banned ? 'unban' : 'ban'}"
           data-user-id="${user.id}"
-          data-username="${user.username}"
+          data-username="${escapeHtmlOv(user.username)}"
           ${user.is_admin ? 'disabled title="Impossible de bannir un admin"' : ''}
         >
           ${user.is_banned ? 'Débannir' : 'Bannir'}

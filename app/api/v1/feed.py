@@ -3,7 +3,7 @@ import uuid
 from flask import request as flask_request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.extensions import facade
+from app.extensions import facade, db
 from app.utils import is_valid_image
 
 # Dossier de stockage local des photos (servi par le frontend HTTP server)
@@ -114,7 +114,7 @@ class ReportPost(Resource):
     def post(self, post_id):
         from app.models.feed_post import FeedPost
         user_id = get_jwt_identity()
-        if not FeedPost.query.get(post_id):
+        if not db.session.get(FeedPost, post_id):
             ns.abort(404, "Post not found")
         facade.report_content(
             reporter_id=user_id,
@@ -244,7 +244,7 @@ class ReportComment(Resource):
     def post(self, comment_id):
         from app.models.comment import Comment
         user_id = get_jwt_identity()
-        if not Comment.query.get(comment_id):
+        if not db.session.get(Comment, comment_id):
             ns.abort(404, "Comment not found")
         facade.report_content(
             reporter_id=user_id,

@@ -1,6 +1,6 @@
 ﻿from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.extensions import facade
+from app.extensions import facade, db
 
 ns = Namespace("admin", description="Administration et modération")
 
@@ -142,7 +142,7 @@ class UserActivities(Resource):
         from app.models.user import User
         from app.models.activity import Activity
         admin_required()
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user:
             ns.abort(404, "User not found")
         page     = int(request.args.get("page", 1))
@@ -170,9 +170,8 @@ class AdminDeleteActivity(Resource):
     def delete(self, activity_id):
         """Supprime une activité (et son post de feed associé)."""
         from app.models.activity import Activity
-        from app.extensions import db
         admin_required()
-        activity = Activity.query.get(activity_id)
+        activity = db.session.get(Activity, activity_id)
         if not activity:
             ns.abort(404, "Activity not found")
         db.session.delete(activity)
@@ -191,7 +190,7 @@ class DeleteComment(Resource):
     def delete(self, comment_id):
         admin_required()
         from app.models.comment import Comment
-        comment = Comment.query.get(comment_id)
+        comment = db.session.get(Comment, comment_id)
         if not comment:
             ns.abort(404, "Comment not found")
         comment.delete()
