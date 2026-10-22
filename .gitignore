@@ -11,3 +11,7 @@ __pycache__/
 # IDE
 .vscode/
 .idea/
+
+# Fichiers envoyés par les utilisateurs et dossier instance Flask
+frontend/uploads/
+instance/

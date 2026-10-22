@@ -8,7 +8,6 @@ from app.utils import is_valid_image
 
 # Dossier de stockage local des photos (servi par le frontend HTTP server)
 UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
-FRONTEND_URL = 'http://localhost:5000'
 ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
 
 ns = Namespace("feed", description="Feed social et interactions")
@@ -164,7 +163,7 @@ class PostPhoto(Resource):
         os.makedirs(UPLOAD_DIR, exist_ok=True)
         file.save(os.path.join(UPLOAD_DIR, filename))
 
-        post.photo_url = f"{FRONTEND_URL}/uploads/{filename}"
+        post.photo_url = f"/uploads/{filename}"
         post.photo_public_id = filename
         facade.feed_repository.save(post)
 

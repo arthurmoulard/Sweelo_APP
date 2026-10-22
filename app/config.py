@@ -5,6 +5,18 @@ from dotenv import load_dotenv
 load_dotenv()  # Charge le fichier .env à la racine du projet
 
 
+def _database_url(default):
+    """Lit DATABASE_URL et l'adapte au driver utilisé par SQLAlchemy.
+
+    Les hébergeurs (Railway…) fournissent une URL « mysql://… » ; SQLAlchemy
+    a besoin du nom du driver Python, ici PyMySQL : « mysql+pymysql://… ».
+    """
+    url = os.getenv("DATABASE_URL", default)
+    if url.startswith("mysql://"):
+        url = "mysql+pymysql://" + url[len("mysql://"):]
+    return url
+
+
 class BaseConfig:
     """Configuration commune à tous les environnements."""
 
@@ -55,7 +67,7 @@ class DevelopmentConfig(BaseConfig):
     """
 
     DEBUG                   = True
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///sweelo_dev.db")
+    SQLALCHEMY_DATABASE_URI = _database_url("sqlite:///sweelo_dev.db")
 
     # Logs SQL dans le terminal en dev (pratique pour déboguer)
     SQLALCHEMY_ECHO         = True
@@ -86,11 +98,12 @@ class ProductionConfig(BaseConfig):
     """
 
     DEBUG                   = False
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL",
-        "mysql+pymysql://user:password@localhost/sweelo_prod"
-    )
+    SQLALCHEMY_DATABASE_URI = _database_url("mysql+pymysql://user:password@localhost/sweelo_prod")
     SQLALCHEMY_ECHO         = False
+
+    # MySQL ferme les connexions inactives : on vérifie chaque connexion avant
+    # de l'utiliser et on la renouvelle toutes les 5 minutes.
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "pool_recycle": 280}
 
     # Sécurité renforcée en prod
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=12)

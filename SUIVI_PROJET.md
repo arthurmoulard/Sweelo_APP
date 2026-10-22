@@ -23,7 +23,7 @@ L'ensemble du suivi agile (planification des sprints, reviews et rétrospectives
 
 Les tests backend se trouvent dans le dépôt : **70 cas** au total (45 d'intégration + 25 unitaires), écrits avec [pytest](https://docs.pytest.org).
 
-Exécution : `pytest` (base SQLite en mémoire dédiée aux tests, `.venv` doit contenir `pytest` + `pytest-flask` du `requirement.txt`). La modération OpenAI est neutralisée pendant les tests (aucun appel réseau réel), sauf dans `test_moderation_service.py` où elle est simulée (mock).
+Exécution : `pytest` (base SQLite en mémoire dédiée aux tests, `.venv` doit contenir `pytest` + `pytest-flask` du `requirements.txt`). La modération OpenAI est neutralisée pendant les tests (aucun appel réseau réel), sauf dans `test_moderation_service.py` où elle est simulée (mock).
 
 **CI GitHub Actions** : [`.github/workflows/ci.yml`](https://github.com/arthurmoulard/Sweelo_APP/blob/main/.github/workflows/ci.yml) — lance `flake8` (lint) puis `pytest` (70 tests) sur chaque push et pull request, quelle que soit la branche.
 
@@ -146,7 +146,7 @@ tests/
 Aucun environnement de production hébergé. L'application se lance en local :
 
 ```bash
-pip install -r requirement.txt
+pip install -r requirements.txt
 python run.py   # Flask API + PWA Vanilla JS, SQLite en dev
 pytest           # 70 tests, base SQLite en mémoire
 ```

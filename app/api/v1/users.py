@@ -7,7 +7,6 @@ from app.extensions import facade
 from app.utils import is_valid_image
 
 UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
-FRONTEND_URL = 'http://localhost:5000'
 ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
 
 ns = Namespace("users", description="Profil et amis")
@@ -89,7 +88,7 @@ class MyAvatar(Resource):
         os.makedirs(avatar_dir, exist_ok=True)
         file.save(os.path.join(avatar_dir, filename))
 
-        user.avatar_url = f"{FRONTEND_URL}/uploads/avatars/{filename}"
+        user.avatar_url = f"/uploads/avatars/{filename}"
         facade.user_repository.save(user)
 
         return {"avatar_url": user.avatar_url}, 200
