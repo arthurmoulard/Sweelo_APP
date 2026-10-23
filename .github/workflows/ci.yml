@@ -24,7 +24,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Lint (flake8)
-        run: flake8 app/ run.py tests/
+        run: flake8 app/ index.py run.py tests/
 
       - name: Tests (pytest)
         env:

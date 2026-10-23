@@ -1,13 +1,10 @@
-﻿import os
-import uuid
-from flask import request as flask_request
+﻿from flask import request as flask_request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import facade, db
 from app.utils import is_valid_image
+from app.storage import save_image, delete_image
 
-# Dossier de stockage local des photos (servi par le frontend HTTP server)
-UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
 ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
 
 ns = Namespace("feed", description="Feed social et interactions")
@@ -152,19 +149,11 @@ class PostPhoto(Resource):
             ns.abort(400, "File content does not match its extension")
 
         # Supprime l'ancienne photo si elle existe
-        if post.photo_url:
-            old_name = post.photo_url.split('/uploads/')[-1]
-            old_path = os.path.join(UPLOAD_DIR, old_name)
-            if os.path.exists(old_path):
-                os.remove(old_path)
+        delete_image(post.photo_url)
 
-        # Sauvegarde la nouvelle photo avec un nom unique
-        filename = f"{uuid.uuid4().hex}.{ext}"
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        file.save(os.path.join(UPLOAD_DIR, filename))
-
-        post.photo_url = f"/uploads/{filename}"
-        post.photo_public_id = filename
+        # Enregistre la nouvelle photo (Vercel Blob en production, disque en local)
+        post.photo_url = save_image(file, "posts", ext)
+        post.photo_public_id = post.photo_url.rsplit('/', 1)[-1][:200]
         facade.feed_repository.save(post)
 
         return {"photo_url": post.photo_url}, 200
@@ -183,10 +172,7 @@ class PostPhoto(Resource):
             ns.abort(403, "Not your post")
 
         if post.photo_url:
-            filename = post.photo_url.split('/uploads/')[-1]
-            path = os.path.join(UPLOAD_DIR, filename)
-            if os.path.exists(path):
-                os.remove(path)
+            delete_image(post.photo_url)
             post.photo_url       = None
             post.photo_public_id = None
             facade.feed_repository.save(post)

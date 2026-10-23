@@ -15,3 +15,6 @@ __pycache__/
 # Fichiers envoyés par les utilisateurs et dossier instance Flask
 frontend/uploads/
 instance/
+
+# Vercel (dossier créé par la commande « vercel link »)
+.vercel/

@@ -1,12 +1,10 @@
-import os
-import uuid
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request
 from app.extensions import facade
 from app.utils import is_valid_image
+from app.storage import save_image, delete_image
 
-UPLOAD_DIR   = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'frontend', 'uploads')
 ALLOWED_EXT  = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
 
 ns = Namespace("users", description="Profil et amis")
@@ -76,19 +74,10 @@ class MyAvatar(Resource):
             ns.abort(400, "File content does not match its extension")
 
         # Supprime l'ancienne photo de profil si elle existe
-        if user.avatar_url and '/uploads/' in user.avatar_url:
-            rel = user.avatar_url.split('/uploads/', 1)[-1]
-            old_path = os.path.join(UPLOAD_DIR, rel)
-            if os.path.exists(old_path):
-                os.remove(old_path)
+        delete_image(user.avatar_url)
 
-        # Sauvegarde la nouvelle photo dans uploads/avatars/
-        filename  = f"avatar_{uuid.uuid4().hex}.{ext}"
-        avatar_dir = os.path.join(UPLOAD_DIR, 'avatars')
-        os.makedirs(avatar_dir, exist_ok=True)
-        file.save(os.path.join(avatar_dir, filename))
-
-        user.avatar_url = f"/uploads/avatars/{filename}"
+        # Enregistre la nouvelle photo (Vercel Blob en production, disque en local)
+        user.avatar_url = save_image(file, "avatars", ext)
         facade.user_repository.save(user)
 
         return {"avatar_url": user.avatar_url}, 200
@@ -103,11 +92,8 @@ class MyAvatar(Resource):
         if not user:
             ns.abort(404, "User not found")
 
-        if user.avatar_url and '/uploads/' in user.avatar_url:
-            rel = user.avatar_url.split('/uploads/', 1)[-1]
-            path = os.path.join(UPLOAD_DIR, rel)
-            if os.path.exists(path):
-                os.remove(path)
+        if user.avatar_url:
+            delete_image(user.avatar_url)
             user.avatar_url = None
             facade.user_repository.save(user)
 

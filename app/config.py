@@ -1,5 +1,8 @@
 import os
+import tempfile
 from datetime import timedelta
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
 from dotenv import load_dotenv
 
 load_dotenv()  # Charge le fichier .env à la racine du projet
@@ -8,13 +11,37 @@ load_dotenv()  # Charge le fichier .env à la racine du projet
 def _database_url(default):
     """Lit DATABASE_URL et l'adapte au driver utilisé par SQLAlchemy.
 
-    Les hébergeurs (Railway…) fournissent une URL « mysql://… » ; SQLAlchemy
-    a besoin du nom du driver Python, ici PyMySQL : « mysql+pymysql://… ».
+    Aiven fournit une URL « mysql://…?ssl-mode=REQUIRED » :
+    - SQLAlchemy a besoin du nom du driver Python, ici PyMySQL : « mysql+pymysql://… » ;
+    - PyMySQL ne connaît pas le paramètre « ssl-mode » : on le retire de l'URL et
+      le chiffrement est activé dans _mysql_connect_args().
     """
     url = os.getenv("DATABASE_URL", default)
     if url.startswith("mysql://"):
         url = "mysql+pymysql://" + url[len("mysql://"):]
-    return url
+    parts = urlsplit(url)
+    query = [(k, v) for k, v in parse_qsl(parts.query) if k.lower() not in ("ssl-mode", "sslmode")]
+    return urlunsplit(parts._replace(query=urlencode(query)))
+
+
+def _mysql_connect_args():
+    """Options de connexion SSL pour MySQL hébergé (Aiven exige une connexion chiffrée).
+
+    - DATABASE_CA_CERT (contenu du fichier ca.pem d'Aiven) : connexion chiffrée ET
+      vérification du certificat du serveur (recommandé) ;
+    - sinon, si l'URL contient ssl-mode=REQUIRED : connexion chiffrée sans vérification ;
+    - sinon (MySQL local) : pas de SSL.
+    """
+    ca_cert = os.getenv("DATABASE_CA_CERT", "").strip()
+    if ca_cert:
+        # Sur Vercel, seul /tmp est accessible en écriture
+        ca_path = os.path.join(tempfile.gettempdir(), "sweelo-db-ca.pem")
+        with open(ca_path, "w", encoding="utf-8") as f:
+            f.write(ca_cert.replace("\\n", "\n") + "\n")
+        return {"ssl": {"ca": ca_path}}
+    if "ssl-mode=" in os.getenv("DATABASE_URL", "").lower():
+        return {"ssl": {"check_hostname": False}}
+    return {}
 
 
 class BaseConfig:
@@ -56,7 +83,9 @@ class BaseConfig:
     CLOUDINARY_API_SECRET  = os.getenv("CLOUDINARY_API_SECRET", "")
 
     # ── Upload ─────────────────────────────────────────────────────────────────
-    MAX_CONTENT_LENGTH     = 5 * 1024 * 1024   # 5 MB max par upload
+    # Vercel refuse les requêtes de plus de 4,5 Mo : on bloque à 4 Mo côté Flask
+    # pour renvoyer une erreur 413 claire plutôt qu'une erreur de la plateforme.
+    MAX_CONTENT_LENGTH     = 4 * 1024 * 1024   # 4 MB max par upload
     ALLOWED_EXTENSIONS     = {"jpg", "jpeg", "png", "webp"}
 
 
@@ -94,7 +123,7 @@ class TestingConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     """
     Environnement de production.
-    BDD : MySQL (variable DATABASE_URL obligatoire)
+    Hébergement : Vercel · BDD : MySQL sur Aiven (variable DATABASE_URL obligatoire)
     """
 
     DEBUG                   = False
@@ -102,8 +131,16 @@ class ProductionConfig(BaseConfig):
     SQLALCHEMY_ECHO         = False
 
     # MySQL ferme les connexions inactives : on vérifie chaque connexion avant
-    # de l'utiliser et on la renouvelle toutes les 5 minutes.
-    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "pool_recycle": 280}
+    # de l'utiliser et on la renouvelle toutes les 5 minutes. Petit pool : sur
+    # Vercel, chaque instance de la fonction ouvre ses propres connexions et
+    # l'offre gratuite d'Aiven en accepte un nombre limité.
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 280,
+        "pool_size": 2,
+        "max_overflow": 3,
+        "connect_args": _mysql_connect_args(),
+    }
 
     # Sécurité renforcée en prod
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=12)
@@ -123,12 +160,13 @@ Sweelo — Configuration
 ======================
 Trois environnements : Development · Testing · Production
 
-Variables d'environnement requises (fichier .env) :
-    SECRET_KEY          — clé secrète Flask
-    JWT_SECRET_KEY      — clé de signature des tokens JWT
-    OPENAI_API_KEY      — clé API OpenAI (coaching IA + modération)
-    DATABASE_URL        — URL BDD (optionnel, sinon SQLite par défaut)
-    CLOUDINARY_URL      — URL Cloudinary (optionnel, photos des posts)
+Variables d'environnement (fichier .env en local, réglages du projet sur Vercel) :
+    SECRET_KEY            — clé secrète Flask
+    JWT_SECRET_KEY        — clé de signature des tokens JWT
+    OPENAI_API_KEY        — clé API OpenAI (coaching IA + modération)
+    DATABASE_URL          — URL BDD (obligatoire en production, sinon SQLite par défaut)
+    DATABASE_CA_CERT      — certificat CA d'Aiven (optionnel, vérifie le serveur MySQL)
+    BLOB_READ_WRITE_TOKEN — jeton Vercel Blob (ajouté par Vercel, photos et avatars)
 
 Usage :
     from app.config import config
