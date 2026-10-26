@@ -45,8 +45,10 @@ class ActivityRepository(BaseRepository):
             .filter_by(user_id=user_id)
             .first()
         )
+        # MySQL renvoie SUM() sous forme de Decimal, que le JSON ne sait pas
+        # sérialiser (SQLite renvoie un float) : on convertit explicitement.
         return {
-            "total_km":    round(result[0], 2),
-            "total_min":   result[1],
-            "total_count": result[2],
+            "total_km":    round(float(result[0]), 2),
+            "total_min":   int(result[1]),
+            "total_count": int(result[2]),
         }
