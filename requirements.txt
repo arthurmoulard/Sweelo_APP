@@ -1,4 +1,4 @@
-﻿# Sweelo — Requirements
+# Sweelo — Requirements
 # =====================
 # Installation : pip install -r requirements.txt
 
