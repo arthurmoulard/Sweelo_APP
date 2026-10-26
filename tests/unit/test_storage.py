@@ -3,6 +3,7 @@ import io
 import sys
 import types
 
+import pytest
 from werkzeug.datastructures import FileStorage
 
 from app import storage
@@ -18,6 +19,7 @@ def _file():
 def test_local_save_then_delete(tmp_path, monkeypatch):
     """Sans jeton Vercel Blob, l'image va sur le disque puis peut être supprimée."""
     monkeypatch.delenv("BLOB_READ_WRITE_TOKEN", raising=False)
+    monkeypatch.delenv("BLOB_STORE_ID", raising=False)
     monkeypatch.setattr(storage, "UPLOAD_DIR", str(tmp_path))
 
     url = storage.save_image(_file(), "posts", "png")
@@ -32,6 +34,7 @@ def test_local_save_then_delete(tmp_path, monkeypatch):
 def test_local_delete_refuses_path_traversal(tmp_path, monkeypatch):
     """Une URL forgée (« ../ ») ne doit jamais supprimer un fichier hors de uploads/."""
     monkeypatch.delenv("BLOB_READ_WRITE_TOKEN", raising=False)
+    monkeypatch.delenv("BLOB_STORE_ID", raising=False)
     uploads = tmp_path / "uploads"
     uploads.mkdir()
     victim = tmp_path / "config.py"
@@ -42,8 +45,9 @@ def test_local_delete_refuses_path_traversal(tmp_path, monkeypatch):
     assert victim.exists()
 
 
-def test_blob_save_and_delete(monkeypatch):
-    """Avec un jeton Vercel Blob, l'image est envoyée au SDK et l'URL publique renvoyée."""
+@pytest.mark.parametrize("env_var", ["BLOB_STORE_ID", "BLOB_READ_WRITE_TOKEN"])
+def test_blob_save_and_delete(monkeypatch, env_var):
+    """Store Blob relié (OIDC) ou jeton : l'image est envoyée au SDK et l'URL publique renvoyée."""
     calls = {}
 
     def put_blob(pathname, body, *, access, content_type):
@@ -57,7 +61,9 @@ def test_blob_save_and_delete(monkeypatch):
     fake_blob = types.ModuleType("vercel.blob")
     fake_blob.sync = fake_sync
     monkeypatch.setitem(sys.modules, "vercel.blob", fake_blob)
-    monkeypatch.setenv("BLOB_READ_WRITE_TOKEN", "test-token")
+    monkeypatch.delenv("BLOB_STORE_ID", raising=False)
+    monkeypatch.delenv("BLOB_READ_WRITE_TOKEN", raising=False)
+    monkeypatch.setenv(env_var, "test-value")
 
     url = storage.save_image(_file(), "avatars", "png")
     pathname, body, access, content_type = calls["put"]

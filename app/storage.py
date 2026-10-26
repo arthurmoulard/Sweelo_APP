@@ -3,7 +3,8 @@ Sweelo — Stockage des images (photos des posts, avatars)
 ========================================================
 Deux modes, choisis automatiquement :
 
-- Vercel Blob (production) : quand la variable BLOB_READ_WRITE_TOKEN existe.
+- Vercel Blob (production) : quand Vercel a relié un store Blob au projet
+  (variable BLOB_STORE_ID, connexion OIDC) ou qu'un jeton BLOB_READ_WRITE_TOKEN existe.
   Sur Vercel, le disque est en lecture seule et effacé à chaque déploiement :
   les images sont donc envoyées dans le stockage Vercel Blob, qui renvoie une
   URL publique (https://….public.blob.vercel-storage.com/…).
@@ -25,7 +26,23 @@ CONTENT_TYPES = {
 
 
 def _blob_enabled():
-    return bool(os.getenv("BLOB_READ_WRITE_TOKEN"))
+    return bool(os.getenv("BLOB_STORE_ID") or os.getenv("BLOB_READ_WRITE_TOKEN"))
+
+
+def _blob_client():
+    """Renvoie le client Vercel Blob, prêt à s'authentifier.
+
+    Avec OIDC, Vercel transmet un jeton temporaire dans l'en-tête de chaque
+    requête (x-vercel-oidc-token) : on donne les en-têtes de la requête en
+    cours au SDK pour qu'il puisse le lire.
+    """
+    from flask import has_request_context, request
+    from vercel.blob import sync as blob
+    from vercel.headers import set_headers
+
+    if has_request_context():
+        set_headers(dict(request.headers))
+    return blob
 
 
 def save_image(file_storage, folder, ext):
@@ -37,7 +54,7 @@ def save_image(file_storage, folder, ext):
     filename = f"{uuid.uuid4().hex}.{ext}"
 
     if _blob_enabled():
-        from vercel.blob import sync as blob
+        blob = _blob_client()
         result = blob.put_blob(
             f"{folder}/{filename}",
             file_storage.read(),
@@ -59,8 +76,7 @@ def delete_image(url):
 
     if url.startswith("https://"):
         if _blob_enabled():
-            from vercel.blob import sync as blob
-            blob.delete_blob(url)
+            _blob_client().delete_blob(url)
         return
 
     if "/uploads/" in url:
