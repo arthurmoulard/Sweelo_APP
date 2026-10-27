@@ -79,3 +79,14 @@ def test_database_url_aiven(monkeypatch):
     """L'URL fournie par Aiven est convertie pour PyMySQL (driver + ssl-mode retiré)."""
     monkeypatch.setenv("DATABASE_URL", "mysql://avnadmin:pw@host.aivencloud.com:12345/defaultdb?ssl-mode=REQUIRED")
     assert _database_url("") == "mysql+pymysql://avnadmin:pw@host.aivencloud.com:12345/defaultdb"
+
+
+@pytest.mark.parametrize("url", [
+    "sqlite:///sweelo_dev.db",
+    "sqlite:////home/user/sweelo.db",
+    "mysql+pymysql://user:pw@localhost/sweelo",
+])
+def test_database_url_unchanged_without_ssl_mode(monkeypatch, url):
+    """Sans ssl-mode, l'URL n'est pas modifiée (chemins SQLite absolus compris)."""
+    monkeypatch.setenv("DATABASE_URL", url)
+    assert _database_url("") == url

@@ -51,3 +51,8 @@ async function logout() {
   await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
   window.location.replace('/pages/login/login.html');
 }
+
+// PWA : enregistre le service worker (rend l'appli installable sur mobile)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}

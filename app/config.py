@@ -19,6 +19,8 @@ def _database_url(default):
     url = os.getenv("DATABASE_URL", default)
     if url.startswith("mysql://"):
         url = "mysql+pymysql://" + url[len("mysql://"):]
+    if "ssl-mode" not in url.lower() and "sslmode" not in url.lower():
+        return url   # rien à nettoyer (SQLite, MySQL local) : l'URL reste intacte
     parts = urlsplit(url)
     query = [(k, v) for k, v in parse_qsl(parts.query) if k.lower() not in ("ssl-mode", "sslmode")]
     return urlunsplit(parts._replace(query=urlencode(query)))
